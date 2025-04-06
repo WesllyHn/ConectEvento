@@ -1,63 +1,73 @@
-# ConectEvento
+# 🎉 ConectEvento – Conectando Experiências Inesquecíveis
 
-## 📌 Descrição do Projeto
-O **ConectEvento** é uma plataforma web inovadora que conecta fornecedores de serviços de eventos a organizadores e clientes. Com o objetivo de otimizar e modernizar a busca por fornecedores, a plataforma permite que os usuários comparem e contratem serviços essenciais para diversos tipos de eventos, como casamentos, festas e reuniões corporativas. 
+O **ConectEvento** é uma plataforma web inovadora que conecta fornecedores de serviços de eventos a organizadores e clientes. Com foco em modernizar e facilitar a contratação de serviços, a plataforma oferece uma experiência completa para quem busca fornecedores para casamentos, festas, reuniões corporativas e outros eventos.
 
-🔹 **Principais Funcionalidades:**
-- Cadastro e login de usuários e fornecedores.
-- Pesquisa avançada e filtros de fornecedores.
-- Perfis detalhados de fornecedores com avaliações e comentários.
-- Solicitação de orçamento e agendamento de serviços.
-- Painel administrativo para gerenciamento e moderação.
+---
+
+## 🔍 Visão Geral
+
+### 🔹 Principais Funcionalidades
+- Cadastro e login para usuários e fornecedores
+- Pesquisa avançada com filtros por categoria, localização e avaliações
+- Perfis completos de fornecedores com comentários e notas de clientes
+- Solicitação de orçamentos e agendamentos de serviços
+- Painel administrativo para gerenciamento de contas, serviços e moderação de conteúdo
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
+<p align="center">
+  <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" />
+  <img src="https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" />
+  <img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+</p>
+
 ### 🎨 Front-end
-- **Linguagem:** JavaScript
-- **Framework:** React.js
-- **Estilização:** Styled Components / Tailwind CSS
-- **Gerenciamento de Estado:** Redux / Context API
-- **Consumo de API:** Axios
+- **Linguagem:** JavaScript  
+- **Framework:** React.js  
+- **Estilização:** Tailwind CSS / Styled Components  
+- **Gerenciamento de Estado:** Redux / Context API  
+- **Requisições HTTP:** Axios  
 
 ### 🖥️ Back-end
-- **Linguagem:** JavaScript
-- **Framework:** Node.js com Express
-- **API:** RESTful
-- **ORM:** Sequelize
+- **Linguagem:** JavaScript  
+- **Framework:** Node.js com Express  
+- **Arquitetura:** RESTful API  
+- **ORM:** Sequelize  
 
 ### 🗄️ Banco de Dados
-- **Sistema Gerenciador:** PostgreSQL
-- **Migrations e Versionamento:** Sequelize
+- **SGDB:** PostgreSQL  
+- **Migrations e Versionamento:** Sequelize  
 
 ### 🔒 Autenticação e Segurança
-- **JWT (JSON Web Token)** para autenticação segura.
-- **Hash de Senha** utilizando bcrypt.
-- **Validação de dados** para cadastro e login.
-- **Proteção contra SQL Injection** utilizando ORM (Sequelize).
-- **Configuração de CORS** para controle de acesso à API.
+- **JWT (JSON Web Token)** para autenticação segura  
+- **Hash de senhas:** bcrypt  
+- **Validação de dados** no cadastro e login  
+- **Prevenção de SQL Injection** com uso de ORM  
+- **Configuração de CORS** para controle de acesso seguro à API  
 
-### 🔧 DevOps e Ferramentas
-- **Controle de versão:** GitHub
-- **Ambiente de Desenvolvimento:** Docker
-- **Gerenciamento de Tarefas:** Jira / Trello
-- **Monitoramento e Logs:** Winston / Elastic Stack (ELK)
+### ⚙️ DevOps e Ferramentas
+- **Controle de versão:** GitHub  
+- **Ambiente de desenvolvimento:** Docker  
+- **Gerenciamento de tarefas:** Jira / Trello  
+- **Monitoramento e Logs:** Winston / Elastic Stack (ELK)  
 
 ---
 
 ## 🔐 Segurança do Projeto
-A segurança é uma prioridade no **ConectEvento**. Para garantir a proteção dos usuários e da plataforma, adotamos as seguintes práticas:
 
-- **Autenticação Segura:** Implementação de JWT para garantir sessões protegidas.
-- **Proteção de Dados:** Senhas armazenadas com hash bcrypt para evitar vazamentos.
-- **Validação Rigorosa:** Verificação de dados no cadastro e login para impedir acessos não autorizados.
-- **Prevenção de Ataques:** Uso de ORM para evitar SQL Injection e configuração adequada de CORS.
-- **Monitoramento Contínuo:** Implementação de logs detalhados para análise de eventos suspeitos.
+A segurança é um dos pilares do **ConectEvento**. As práticas implementadas visam garantir a integridade da plataforma e a privacidade dos usuários:
 
----
+- **Autenticação Segura:** JWT para sessões protegidas
+- **Proteção de Dados:** Hash de senhas com bcrypt
+- **Validação Rigorosa:** Checagem de dados no momento do cadastro e login
+- **Prevenção de Ataques:** ORM para evitar SQL Injection + CORS bem configurado
+- **Monitoramento Contínuo:** Logs estruturados e integrados à stack ELK para rastrear atividades suspeitas
 
-## 📂 Links para Downloads
-Aqui você pode baixar os documentos relacionados ao projeto:
+## 📄 Documentos do Projeto
 
-📄 [Documento_RFC.pdf](https://github.com/user-attachments/files/19522708/Conect_Evento.pdf) - Em Desenvolvimento
+📥 [Download do Documento RFC (PDF)](https://github.com/user-attachments/files/19623557/Conect_Evento.pdf) – *Em Desenvolvimento*
