@@ -1,18 +1,26 @@
-# 🎉 ConectEvento – Conectando Experiências Inesquecíveis
+# 🎉 ConectEvento
+O **ConectEvento** é uma plataforma web inovadora que conecta organizadores de eventos a fornecedores de serviços, facilitando a busca, comparação e contratação de soluções essenciais para diferentes tipos de eventos, como casamentos, festas e reuniões corporativas.
 
-O **ConectEvento** é uma plataforma web inovadora que conecta fornecedores de serviços de eventos a organizadores e clientes. Com foco em modernizar e facilitar a contratação de serviços, a plataforma oferece uma experiência completa para quem busca fornecedores para casamentos, festas, reuniões corporativas e outros eventos.
+Por meio de uma experiência ágil, eficiente e centralizada, a plataforma permite pesquisas personalizadas com base em critérios como tipo de evento, orçamento, localização e disponibilidade.
 
 ---
 
 ## 🔍 Visão Geral
 
-### 🔹 Principais Funcionalidades
-- Cadastro e login para usuários e fornecedores
-- Pesquisa avançada com filtros por categoria, localização e avaliações
-- Perfis completos de fornecedores com comentários e notas de clientes
-- Solicitação de orçamentos e agendamentos de serviços
-- Painel administrativo para gerenciamento de contas, serviços e moderação de conteúdo
+### 🎯 Problema a Resolver
+A organização de eventos no modelo tradicional enfrenta diversos desafios:
+- Dificuldade na busca e comparação de fornecedores confiáveis
+- Falta de centralização das informações sobre serviços
+- Comunicação ineficiente entre organizadores e fornecedores
+- Processo manual e demorado para solicitar orçamentos
 
+### 🔹 Principais Funcionalidades
+- **Cadastro e Perfis:** Criação de perfis completos para fornecedores com portfólio, serviços e preços
+- **Pesquisa Avançada:** Filtros por localização, tipo de evento, faixa de preço e avaliações
+- **Sistema de Avaliações:** Comentários e notas de clientes para fornecedores
+- **Solicitação de Orçamentos:** Envio direto de solicitações com notificações automáticas
+- **Roadmap Personalizado:** Guia dos fornecedores necessários para cada tipo de evento
+- **Painel Administrativo:** Moderação de conteúdo e gerenciamento de usuários
 ---
 
 ## 🛠️ Tecnologias Utilizadas
@@ -27,34 +35,42 @@ O **ConectEvento** é uma plataforma web inovadora que conecta fornecedores de s
 </p>
 
 ### 🎨 Front-end
-- **Linguagem:** JavaScript  
-- **Framework:** React.js  
-- **Estilização:** Tailwind CSS / Styled Components  
-- **Gerenciamento de Estado:** Redux / Context API  
-- **Requisições HTTP:** Axios  
+- **Linguagem:** JavaScript / TypeScript
+- **Framework:** React.js
+- **Gerenciamento de Formulários:** React Hook Form
+- **Validação:** Zod
+- **Estilização:** Tailwind CSS
+- **Testes:** Jest
 
 ### 🖥️ Back-end
-- **Linguagem:** JavaScript  
-- **Framework:** Node.js com Express  
-- **Arquitetura:** RESTful API  
-- **ORM:** Sequelize  
+- **Linguagem:** JavaScript / TypeScript
+- **Framework:** Node.js com Express
+- **Arquitetura:** RESTful API seguindo padrão MVC
+- **ORM:** Sequelize
+- **Cache:** Redis para otimização de filtros
+- **Testes:** Jest
 
 ### 🗄️ Banco de Dados
-- **SGDB:** PostgreSQL  
-- **Migrations e Versionamento:** Sequelize  
+- **SGDB:** PostgreSQL
+- **ORM:** Sequelize
+- **Migrations:** Controle de versão do banco
 
 ### 🔒 Autenticação e Segurança
-- **JWT (JSON Web Token)** para autenticação segura  
-- **Hash de senhas:** bcrypt  
-- **Validação de dados** no cadastro e login  
-- **Prevenção de SQL Injection** com uso de ORM  
-- **Configuração de CORS** para controle de acesso seguro à API  
+- **JWT (JSON Web Token)** com expiração e rotação de chaves
+- **Hash de senhas:** bcrypt
+- **Validação rigorosa** de CPF/CNPJ e dados de login
+- **Prevenção de SQL Injection** com ORM
+- **Configuração de CORS** e rate limiting
+- **Conformidade com LGPD** - coleta mediante consentimento
 
 ### ⚙️ DevOps e Ferramentas
-- **Controle de versão:** GitHub  
-- **Ambiente de desenvolvimento:** Docker  
-- **Gerenciamento de tarefas:** Jira / Trello  
-- **Monitoramento e Logs:** Winston / Elastic Stack (ELK)  
+- **Controle de versão:** GitHub
+- **Gestão de projeto:** Jira
+- **Containerização:** Docker
+- **Testes de API:** Postman
+- **CI/CD:** GitHub Actions
+- **Documentação:** Swagger/OpenAPI
+- **Hospedagem:** Vercel (front-end) + Railway (back-end)
 
 ---
 
@@ -62,12 +78,43 @@ O **ConectEvento** é uma plataforma web inovadora que conecta fornecedores de s
 
 A segurança é um dos pilares do **ConectEvento**. As práticas implementadas visam garantir a integridade da plataforma e a privacidade dos usuários:
 
-- **Autenticação Segura:** JWT para sessões protegidas
-- **Proteção de Dados:** Hash de senhas com bcrypt
-- **Validação Rigorosa:** Checagem de dados no momento do cadastro e login
-- **Prevenção de Ataques:** ORM para evitar SQL Injection + CORS bem configurado
-- **Monitoramento Contínuo:** Logs estruturados e integrados à stack ELK para rastrear atividades suspeitas
+### 🛡️ Medidas Implementadas
+- **Autenticação Segura:** JWT com políticas de expiração
+- **Proteção de Dados:** Hash bcrypt + armazenamento seguro
+- **Validação Rigorosa:** Checagem em todas as entradas
+- **Prevenção de Ataques:** Anti SQL Injection + CORS + Rate Limiting
+- **Monitoramento:** Logs estruturados com retenção de 6 meses
+- **Backups:** Automáticos semanais com testes de restauração
+- **Testes de Segurança:** Análise de vulnerabilidades no CI/CD
 
-## 📄 Documentos do Projeto
+### 📋 Conformidade LGPD
+- Coleta de dados mediante consentimento explícito
+- Opções de exclusão de dados pessoais
+- Transparência no uso das informações
+- Políticas de privacidade claras
 
-📥 [Download do Documento RFC (PDF)](https://github.com/user-attachments/files/19623557/Conect_Evento.pdf) – *Em Desenvolvimento*
+
+## 📄 Documentação do Projeto
+
+📥 **[ConectEvento.pdf](https://github.com/user-attachments/files/21172179/ConectEvento.pdf)** - *Especificação técnica detalhada*
+
+
+### 📚 Documentos Disponíveis
+- Especificação de Requisitos
+- Diagramas de Arquitetura (C4 Model)
+- Casos de Uso UML
+- Considerações de Segurança
+- Stack Tecnológica Detalhada
+
+---
+
+## 👥 Sobre o Projeto
+
+**Desenvolvido por:** Weslly Hendler Neres  
+**Curso:** Engenharia de Software  
+**Instituição:** Centro Universitário Católica de Santa Catarina - Joinville  
+**Orientador:** Diogo Vinícius Winck
+
+---
+
+*ConectEvento - Em busca de Transformar a organização de eventos* ✨
