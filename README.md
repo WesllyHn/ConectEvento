@@ -91,13 +91,16 @@ A segurança é um dos pilares do **ConectEvento**. As práticas implementadas v
 - Coleta de dados mediante consentimento explícito
 - Opções de exclusão de dados pessoais
 - Transparência no uso das informações
-- Políticas de privacidade claras
+- Políticas de privacidade claras  
 
+
+## 🔗 Repositório Backend
+ 
+**[ConectEvento Backend](https://github.com/WesllyHn/conectevento-backend)**
 
 ## 📄 Documentação do Projeto
 
 📥 **[ConectEvento.pdf](https://github.com/user-attachments/files/21172179/ConectEvento.pdf)** - *Especificação técnica detalhada*
-
 
 ### 📚 Documentos Disponíveis
 - Especificação de Requisitos
