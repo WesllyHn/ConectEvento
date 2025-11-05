@@ -1,10 +1,14 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { ConfigProvider } from 'antd';
+import ptBR from 'antd/locale/pt_BR';
 import App from './App.tsx';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ConfigProvider locale={ptBR}>
+      <App />
+    </ConfigProvider>
   </StrictMode>
 );

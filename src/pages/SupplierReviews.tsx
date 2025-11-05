@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Star, 
-  MessageSquare, 
-  Calendar, 
+import {
+  ArrowLeft,
+  Star,
+  MessageSquare,
+  Calendar,
   User,
   TrendingUp,
   Award,
   BarChart3,
   Reply,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { mockReviews, mockDetailedReviews } from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
+import { reviewService } from '../services/reviewService';
 
 interface ReviewWithResponse {
   id: string;
@@ -26,26 +27,56 @@ interface ReviewWithResponse {
   responseDate?: string;
 }
 
+const eventTypeMap: Record<string, string> = {
+  WEDDING: 'Casamento',
+  BIRTHDAY: 'Aniversário',
+  CORPORATE: 'Corporativo',
+  PARTY: 'Festa',
+  OTHER: 'Outro'
+};
+
 export function SupplierReviews() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showResponseModal, setShowResponseModal] = useState(false);
   const [selectedReview, setSelectedReview] = useState<string | null>(null);
   const [responseText, setResponseText] = useState('');
+  const [supplierReviews, setSupplierReviews] = useState<ReviewWithResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Mock data - avaliações recebidas pelo fornecedor
-  const supplierReviews: ReviewWithResponse[] = mockDetailedReviews
-    .filter(review => review.supplierId === user?.id)
-    .map(review => ({
-      id: review.id,
-      rating: review.rating,
-      comment: review.comment,
-      createdAt: review.date,
-      organizerName: review.organizerName,
-      eventType: review.eventType,
-      response: review.response,
-      responseDate: review.responseDate
-    }));
+  useEffect(() => {
+    loadReviews();
+  }, [user?.id]);
+
+  const loadReviews = async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await reviewService.getReviewsByUserId(user.id, 'SUPPLIER');
+      
+      const formattedReviews: ReviewWithResponse[] = response.map((review: any) => ({
+        id: review.id,
+        rating: review.rating,
+        comment: review.comment,
+        createdAt: review.createdAt,
+        organizerName: review.organizer?.name || 'Organizador',
+        eventType: eventTypeMap[review.event?.type] || review.event?.type || 'Evento',
+        response: review.response,
+        responseDate: review.responseDate
+      }));
+
+      setSupplierReviews(formattedReviews);
+    } catch (err) {
+      console.error('Erro ao carregar avaliações:', err);
+      setError('Não foi possível carregar as avaliações. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const stats = {
     total: supplierReviews.length,
@@ -58,14 +89,28 @@ export function SupplierReviews() {
     withResponse: supplierReviews.filter(r => r.response).length
   };
 
-  const handleResponseSubmit = (e: React.FormEvent) => {
+  const handleResponseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedReview && responseText.trim()) {
-      // Aqui seria enviada a resposta via API
-      console.log('Resposta enviada:', { reviewId: selectedReview, response: responseText });
+    if (!selectedReview || !responseText.trim()) return;
+
+    try {
+      setSubmitting(true);
+      await reviewService.respondToReview(selectedReview, {
+        response: responseText.trim(),
+        responseDate: new Date().toISOString()
+      });
+
+      // Atualizar a lista de avaliações
+      await loadReviews();
+
       setShowResponseModal(false);
       setSelectedReview(null);
       setResponseText('');
+    } catch (err) {
+      console.error('Erro ao enviar resposta:', err);
+      alert('Não foi possível enviar a resposta. Tente novamente.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -86,164 +131,180 @@ export function SupplierReviews() {
             <ArrowLeft className="w-5 h-5" />
             <span>Voltar ao Dashboard</span>
           </button>
-          
+
           <h1 className="text-3xl font-bold text-gray-900">Minhas Avaliações</h1>
           <p className="text-gray-600 mt-2">Veja o que seus clientes estão dizendo sobre seus serviços</p>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total de Avaliações</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-              </div>
-              <MessageSquare className="w-8 h-8 text-blue-600" />
-            </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
           </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Avaliação Média</p>
-                <div className="flex items-center space-x-2">
-                  <p className="text-2xl font-bold text-gray-900">{stats.averageRating.toFixed(1) || '0'}</p>
-                  <Star className="w-5 h-5 text-yellow-400" fill="currentColor" />
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+            {error}
+          </div>
+        ) : (
+          <>
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total de Avaliações</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  </div>
+                  <MessageSquare className="w-8 h-8 text-blue-600" />
                 </div>
               </div>
-              <Award className="w-8 h-8 text-yellow-600" />
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">5 Estrelas</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.fiveStars}</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-green-600" />
-            </div>
-          </div>
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Avaliação Média</p>
+                    <div className="flex items-center space-x-2">
+                      <p className="text-2xl font-bold text-gray-900">
+                        {Number.isFinite(stats?.averageRating)
+                          ? stats.averageRating.toFixed(1)
+                          : '—'}
+                      </p>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Com Resposta</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.withResponse}</p>
-              </div>
-              <Reply className="w-8 h-8 text-purple-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Rating Distribution */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
-              <BarChart3 className="w-6 h-6 text-blue-600" />
-              <span>Distribuição</span>
-            </h2>
-            
-            <div className="space-y-3">
-              {[5, 4, 3, 2, 1].map((stars) => {
-                const count = stats[`${stars === 1 ? 'oneStar' : stars === 2 ? 'twoStars' : stars === 3 ? 'threeStars' : stars === 4 ? 'fourStars' : 'fiveStars'}` as keyof typeof stats] as number;
-                const percentage = stats.total > 0 ? (count / stats.total) * 100 : 0;
-                
-                return (
-                  <div key={stars} className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-1 w-16">
-                      <span className="text-sm font-medium text-gray-700">{stars}</span>
-                      <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
+                      <Star className="w-5 h-5 text-yellow-400" fill="currentColor" />
                     </div>
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${percentage}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm text-gray-600 w-8">{count}</span>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                  <Award className="w-8 h-8 text-yellow-600" />
+                </div>
+              </div>
 
-          {/* Reviews List */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Avaliações Recebidas</h2>
-              
-              {supplierReviews.length > 0 ? (
-                <div className="space-y-6">
-                  {supplierReviews.map((review) => (
-                    <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
-                            <User className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">{review.organizerName}</p>
-                            <div className="flex items-center space-x-2 text-sm text-gray-600">
-                              <Calendar className="w-4 h-4" />
-                              <span>{new Date(review.createdAt).toLocaleDateString('pt-BR')}</span>
-                              <span>•</span>
-                              <span>{review.eventType}</span>
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">5 Estrelas</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.fiveStars}</p>
+                  </div>
+                  <TrendingUp className="w-8 h-8 text-green-600" />
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Com Resposta</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.withResponse}</p>
+                  </div>
+                  <Reply className="w-8 h-8 text-purple-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Rating Distribution */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
+                  <BarChart3 className="w-6 h-6 text-blue-600" />
+                  <span>Distribuição</span>
+                </h2>
+
+                <div className="space-y-3">
+                  {[5, 4, 3, 2, 1].map((stars) => {
+                    const count = stats[`${stars === 1 ? 'oneStar' : stars === 2 ? 'twoStars' : stars === 3 ? 'threeStars' : stars === 4 ? 'fourStars' : 'fiveStars'}` as keyof typeof stats] as number;
+                    const percentage = stats.total > 0 ? (count / stats.total) * 100 : 0;
+
+                    return (
+                      <div key={stars} className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-1 w-16">
+                          <span className="text-sm font-medium text-gray-700">{stars}</span>
+                          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
+                        </div>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-gray-600 w-8">{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Reviews List */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-6">Avaliações Recebidas</h2>
+
+                  {supplierReviews.length > 0 ? (
+                    <div className="space-y-6">
+                      {supplierReviews.map((review) => (
+                        <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center space-x-4">
+                              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
+                                <User className="w-6 h-6 text-white" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-gray-900">{review.organizerName}</p>
+                                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{new Date(review.createdAt).toLocaleDateString('pt-BR')}</span>
+                                  <span>•</span>
+                                  <span>{review.eventType}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-5 h-5 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'
+                                    }`}
+                                  fill="currentColor"
+                                />
+                              ))}
                             </div>
                           </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-5 h-5 ${
-                                i < review.rating ? 'text-yellow-400' : 'text-gray-300'
-                              }`}
-                              fill="currentColor"
-                            />
-                          ))}
-                        </div>
-                      </div>
 
-                      <p className="text-gray-700 mb-4">{review.comment}</p>
+                          <p className="text-gray-700 mb-4">{review.comment}</p>
 
-                      {review.response ? (
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Reply className="w-4 h-4 text-blue-600" />
-                            <span className="text-sm font-medium text-blue-900">Sua resposta</span>
-                            <span className="text-xs text-blue-600">
-                              {new Date(review.responseDate!).toLocaleDateString('pt-BR')}
-                            </span>
-                          </div>
-                          <p className="text-blue-800">{review.response}</p>
+                          {review.response ? (
+                            <div className="bg-blue-50 p-4 rounded-lg">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <Reply className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm font-medium text-blue-900">Sua resposta</span>
+                                <span className="text-xs text-blue-600">
+                                  {new Date(review.responseDate!).toLocaleDateString('pt-BR')}
+                                </span>
+                              </div>
+                              <p className="text-blue-800">{review.response}</p>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => openResponseModal(review.id)}
+                              className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                            >
+                              <Reply className="w-4 h-4" />
+                              <span>Responder avaliação</span>
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        <button
-                          onClick={() => openResponseModal(review.id)}
-                          className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                        >
-                          <Reply className="w-4 h-4" />
-                          <span>Responder avaliação</span>
-                        </button>
-                      )}
+                      ))}
                     </div>
-                  ))}
+                  ) : (
+                    <div className="text-center py-12">
+                      <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Sem avaliações</h3>
+                      <p className="text-gray-600">
+                        Quando você receber avaliações dos clientes, elas aparecerão aqui
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Sem avaliações</h3>
-                  <p className="text-gray-600">
-                    Quando você receber avaliações dos clientes, elas aparecerão aqui
-                  </p>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Response Modal */}
@@ -270,9 +331,8 @@ export function SupplierReviews() {
                       return (
                         <Star
                           key={i}
-                          className={`w-4 h-4 ${
-                            i < (review?.rating || 0) ? 'text-yellow-400' : 'text-gray-300'
-                          }`}
+                          className={`w-4 h-4 ${i < (review?.rating || 0) ? 'text-yellow-400' : 'text-gray-300'
+                            }`}
                           fill="currentColor"
                         />
                       );
@@ -315,9 +375,17 @@ export function SupplierReviews() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    disabled={submitting || !responseText.trim()}
+                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                   >
-                    Enviar Resposta
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Enviando...</span>
+                      </>
+                    ) : (
+                      <span>Enviar Resposta</span>
+                    )}
                   </button>
                 </div>
               </form>

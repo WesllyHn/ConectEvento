@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { Header } from './components/Layout/Header';
-import { Footer } from './components/Layout/Footer';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
@@ -14,6 +14,7 @@ import { Reviews } from './pages/Reviews';
 import { EventRoadmap } from './pages/EventRoadmap';
 import { SupplierProfileEdit } from './pages/SupplierProfileEdit';
 import { SupplierReviews } from './pages/SupplierReviews';
+import { Quotes } from './pages/Quotes';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -85,6 +86,14 @@ function AppRoutes() {
             element={
               <ProtectedRoute>
                 <SupplierReviews />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quotes"
+            element={
+              <ProtectedRoute>
+                <Quotes />
               </ProtectedRoute>
             }
           />

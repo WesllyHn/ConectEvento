@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -21,6 +21,7 @@ export function Login() {
 
     try {
       const success = await login(email, password, userType);
+      console.log('Login success:', success);
       if (success) {
         navigate(userType === 'organizer' ? '/dashboard' : '/supplier-dashboard');
       } else {
@@ -129,25 +130,6 @@ export function Login() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Lembrar de mim
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                  Esqueceu a senha?
-                </a>
-              </div>
-            </div>
-
             <button
               type="submit"
               disabled={isLoading}
@@ -156,21 +138,6 @@ export function Login() {
               {isLoading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Dados de teste</span>
-              </div>
-            </div>
-            <div className="mt-4 text-xs text-gray-500 space-y-1">
-              <p><strong>Organizador:</strong> teste@gmail.com</p>
-              <p><strong>Fornecedor:</strong> teste3@gmail.com</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

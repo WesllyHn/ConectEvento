@@ -1,15 +1,29 @@
 import { apiRequest } from './api';
-import { Event } from '../types';
 
-export interface CreateEventData {
+export interface Event {
+  id: string;
   title: string;
-  type: 'WEDDING' | 'BIRTHDAY' | 'CORPORATE' | 'GRADUATION' | 'BAPTISM' | 'BABY_SHOWER' | 'BRIDAL_SHOWER' | 'ENGAGEMENT' | 'KIDS_PARTY' | 'OTHER';
+  type: 'WEDDING' | 'BIRTHDAY' | 'CORPORATE' | 'GRADUATION' | 'OTHER';
   date: string;
   location: string;
   budget: string;
-  description: string;
+  description?: string;
+  guestCount?: number;
+  status: 'PLANNING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
   organizerId: string;
-  guestCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEventData {
+  title: string;
+  type: 'WEDDING' | 'BIRTHDAY' | 'CORPORATE' | 'GRADUATION' | 'OTHER';
+  date: string;
+  location: string;
+  budget: string;
+  description?: string;
+  guestCount?: number;
+  organizerId: string;
 }
 
 export interface UpdateEventData {
@@ -19,80 +33,47 @@ export interface UpdateEventData {
   location?: string;
   budget?: string;
   description?: string;
-}
-
-export interface EventFilters {
-  type?: string;
-  status?: 'PLANNING' | 'CONFIRMED' | 'COMPLETED';
-  page?: number;
-  limit?: number;
+  guestCount?: number;
+  status?: 'PLANNING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
 }
 
 class EventService {
-  // Buscar todos os eventos
-  // async getAllEvents(): Promise<Event[]> {
-  //   return apiRequest('/events');
-  // }
+  async getEventById(eventId: string): Promise<Event> {
+    const response = await apiRequest(`/events/${eventId}`) as any;
+    return response.data;
+  }
 
-  // // Buscar evento por ID
-  // async getEventById(eventId: string): Promise<Event> {
-  //   return apiRequest(`/events/${eventId}`);
-  // }
+  async getEventsByOrganizerId(organizerId: string): Promise<Event[]> {
+    const response = await apiRequest(`/events/organizer/${organizerId}`) as any;
+    return response.data;
+  }
 
-  // Criar novo evento
   async createEvent(eventData: CreateEventData): Promise<Event> {
-    return apiRequest('/events', {
+    const response = await apiRequest('/events', {
       method: 'POST',
       body: JSON.stringify(eventData),
-    });
+    }) as any;
+    return response.data;
   }
 
-  // Atualizar evento
   async updateEvent(eventId: string, eventData: UpdateEventData): Promise<Event> {
-    return apiRequest(`/events/${eventId}`, {
+    const response = await apiRequest(`/events/${eventId}`, {
       method: 'PUT',
       body: JSON.stringify(eventData),
-    });
+    }) as any;
+    return response.data;
   }
 
-  // Atualizar status do evento
-  async updateEventStatus(eventId: string, status: 'PLANNING' | 'CONFIRMED' | 'COMPLETED'): Promise<Event> {
-    return apiRequest(`/events/${eventId}/status`, {
-      method: 'PATCH',
+  async updateEventStatus(eventId: string, status: 'PLANNING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'): Promise<Event> {
+    const response = await apiRequest(`/events/${eventId}`, {
+      method: 'PUT',
       body: JSON.stringify({ status }),
-    });
+    }) as any;
+    return response.data;
   }
 
-  // Deletar evento
-  async deleteEvent(eventId: string): Promise<void> {
-    return apiRequest(`/events/${eventId}`, {
-      method: 'DELETE',
-    });
-  }
-
-  // Buscar eventos por organizador
   async getEventsByOrganizer(organizerId: string): Promise<Event[]> {
-    return apiRequest(`/events/organizer/${organizerId}`);
-  }
-
-  // Buscar eventos por tipo
-  async getEventsByType(type: string): Promise<Event[]> {
-    return apiRequest(`/events/type/${type}`);
-  }
-
-  // Buscar eventos com filtros
-  async getEventsWithFilters(filters: EventFilters): Promise<Event[]> {
-    const params = new URLSearchParams();
-    
-    if (filters.type) params.append('type', filters.type);
-    if (filters.status) params.append('status', filters.status);
-    if (filters.page) params.append('page', filters.page.toString());
-    if (filters.limit) params.append('limit', filters.limit.toString());
-
-    const queryString = params.toString();
-    const endpoint = queryString ? `/events?${queryString}` : '/events';
-    
-    return apiRequest(endpoint);
+    return this.getEventsByOrganizerId(organizerId);
   }
 }
 

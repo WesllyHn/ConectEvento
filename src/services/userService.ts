@@ -36,13 +36,10 @@ class UserService {
   async getAllUsers(): Promise<User[]> {
     return apiRequest('/users');
   }
-  async getAllSuppliers(): Promise<User[]> {
-    return apiRequest('/users/supplier');
-  }
 
-  // Buscar usuário por ID
-  async getUserById(userId: string): Promise<User> {
-    return apiRequest(`/users/userId/${userId}`);
+  async getUserById(userId: string): Promise<any> {
+    const response = await apiRequest(`/users/userId/${userId}`) as any;
+    return response.data;
   }
 
   // Criar novo usuário
@@ -74,14 +71,13 @@ class UserService {
       email: credentials.email,
       password: credentials.password,
     });
-    const request = await apiRequest(`/users/login/?${params.toString()}`);
-    return request.data;
+    
+    return apiRequest(`/users/login/?${params.toString()}`);
   }
 
-  // Buscar fornecedores (usuários do tipo SUPPLIER)
-  async getSuppliers(): Promise<User[]> {
-    const users = await this.getAllSuppliers();
-    return users.data;
+  async getSuppliers(): Promise<any[]> {
+    const response = await apiRequest('/users/supplier/') as any;
+    return response.data;
   }
 
   // Buscar organizadores (usuários do tipo ORGANIZER)

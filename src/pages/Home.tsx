@@ -1,7 +1,7 @@
 import React from 'react';
-import { Hero } from '../components/Home/Hero';
-import { FeaturedSuppliers } from '../components/Home/FeaturedSuppliers';
-import { Features } from '../components/Home/Features';
+import { Hero } from '../components/Hero';
+import { FeaturedSuppliers } from '../components/FeaturedSuppliers';
+import { Features } from '../components/Features';
 
 export function Home() {
   return (

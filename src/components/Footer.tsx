@@ -17,7 +17,6 @@ export function Footer() {
               Conectando organizadores de eventos aos melhores fornecedores do Brasil. 
               Sua festa perfeita está a um clique de distância.
             </p>
-
           </div>
           
           <div>

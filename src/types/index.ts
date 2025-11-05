@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   type: 'organizer' | 'supplier' | 'ORGANIZER' | 'SUPPLIER';
+  password: string;
   avatar?: string;
   createdAt: string;
   companyName?: string;
@@ -10,7 +11,7 @@ export interface User {
   description?: string;
   location?: string;
   priceRange?: 'budget' | 'mid' | 'premium' | 'BUDGET' | 'MID' | 'PREMIUM';
-  services?: Services[];
+  services?: string[];
   portfolio?: string[];
   availability?: boolean;
   rating?: number;
@@ -49,25 +50,4 @@ export interface Review {
   rating: number;
   comment: string;
   createdAt: string;
-}
-
-export interface Supplier extends User {
-  type: 'SUPPLIER';
-  companyName: string;
-  description: string;
-  services: Services[];
-  location: string;
-  priceRange: 'budget' | 'mid' | 'premium';
-  rating: number;
-  reviewCount: number;
-  portfolio: string[];
-  availability: boolean;
-  cnpj?: string;
-  address?: string;
-}
-
-export interface Services {
-  id: string;
-  servies: string;
-  supplierId: string;
 }

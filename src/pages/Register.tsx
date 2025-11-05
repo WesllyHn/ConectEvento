@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Building, Phone, MapPin } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { Mail, Lock, User, Building, MapPin } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export function Register() {
   const [userType, setUserType] = useState<'organizer' | 'supplier'>('organizer');
@@ -20,6 +20,7 @@ export function Register() {
 
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +38,13 @@ export function Register() {
         name: formData.name,
         email: formData.email,
         type: userType,
-        avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=150'
+        companyName: formData.companyName,
+        password: formData.password,
+        location: formData.location
       });
 
       if (success) {
+        await login(formData.email, formData.password, userType)
         navigate(userType === 'organizer' ? '/dashboard' : '/supplier-dashboard');
       }
     } catch (err) {
@@ -89,22 +93,20 @@ export function Register() {
               <button
                 type="button"
                 onClick={() => setUserType('organizer')}
-                className={`p-3 text-sm font-medium rounded-lg border transition-all duration-200 ${
-                  userType === 'organizer'
+                className={`p-3 text-sm font-medium rounded-lg border transition-all duration-200 ${userType === 'organizer'
                     ? 'bg-blue-600 text-white border-blue-600 shadow-md'
                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-                }`}
+                  }`}
               >
                 Organizador
               </button>
               <button
                 type="button"
                 onClick={() => setUserType('supplier')}
-                className={`p-3 text-sm font-medium rounded-lg border transition-all duration-200 ${
-                  userType === 'supplier'
+                className={`p-3 text-sm font-medium rounded-lg border transition-all duration-200 ${userType === 'supplier'
                     ? 'bg-blue-600 text-white border-blue-600 shadow-md'
                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-                }`}
+                  }`}
               >
                 Fornecedor
               </button>
@@ -167,20 +169,28 @@ export function Register() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              {/* <label className="block text-sm font-medium text-gray-700">
                 Telefone
               </label>
               <div className="mt-1 relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="tel"
+                <InputMask
+                  mask="(99) 99999-9999"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="(11) 99999-9999"
-                />
-              </div>
+                >
+                  {(inputProps: any) => (
+                    <input
+                      {...inputProps}
+                      type="tel"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg 
+                     focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="(11) 99999-9999"
+                    />
+                  )}
+                </InputMask>
+              </div> */}
             </div>
 
             <div>

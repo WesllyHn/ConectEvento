@@ -1,52 +1,118 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  MessageSquare, 
-  Calendar, 
-  DollarSign, 
-  TrendingUp, 
-  Clock, 
-  CheckCircle, 
-  XCircle,
+import {
+  MessageSquare,
+  Calendar,
+  TrendingUp,
+  Clock,
+  CheckCircle,
   Eye,
   Edit,
   Star,
   User,
-  Filter
+  Filter,
+  MapPin,
+  Users
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { mockQuoteRequests, mockSuppliers, mockSupplierStats } from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
+import { quoteService } from '../services/quoteService';
 
 export function SupplierDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'pending' | 'responded' | 'all'>('pending');
+  const [activeTab, setActiveTab] = useState<'PENDING' | 'RESPONDED' | 'all'>('PENDING');
+  const [quotes, setQuotes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
   const [responseMessage, setResponseMessage] = useState('');
   const [responsePrice, setResponsePrice] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  // Mock data - em produção viria da API
-  const supplierQuotes = mockQuoteRequests.filter(quote => quote.supplierId === user?.id);
-  const supplier = mockSuppliers.find(s => s.id === user?.id);
+  useEffect(() => {
+    if (user?.id) {
+      loadQuotes();
+    }
+  }, [user?.id]);
 
-  const filteredQuotes = supplierQuotes.filter(quote => {
+  const loadQuotes = async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoading(true);
+      const data = await quoteService.getBudgetsByUserId(user.id);
+      setQuotes(data);
+    } catch (error) {
+      console.error('Error loading quotes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredQuotes = quotes.filter(quote => {
     if (activeTab === 'all') return true;
     return quote.status === activeTab;
   });
 
   const stats = {
-    total: supplierQuotes.length,
-    pending: supplierQuotes.filter(q => q.status === 'pending').length,
-    responded: supplierQuotes.filter(q => q.status === 'responded').length,
-    accepted: supplierQuotes.filter(q => q.status === 'accepted').length
+    total: quotes.length,
+    pending: quotes.filter(q => q.status === 'PENDING').length,
+    responded: quotes.filter(q => q.status === 'RESPONDED').length,
+    accepted: quotes.filter(q => q.status === 'ACCEPTED').length
   };
 
-  const handleRespond = (quoteId: string) => {
-    // Aqui seria enviada a resposta via API
-    console.log('Resposta enviada:', { quoteId, responseMessage, responsePrice });
-    setSelectedQuote(null);
-    setResponseMessage('');
-    setResponsePrice('');
+  const handleRespond = async (quoteId: string) => {
+    if (!responseMessage || !responsePrice) {
+      alert('Preencha todos os campos');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      // Converte o valor formatado para número
+      const valorNumerico = parseFloat(
+        responsePrice
+          .replace('R$', '')
+          .replace(/\s/g, '')
+          .replace(/\./g, '')
+          .replace(',', '.')
+      ) || 0;
+
+      await quoteService.updateBudget(quoteId, {
+        status: 'RESPONDED',
+        response: responseMessage,
+        price: valorNumerico
+      });
+
+      setSelectedQuote(null);
+      setResponseMessage('');
+      setResponsePrice('');
+      await loadQuotes();
+    } catch (error) {
+      console.error('Error submitting response:', error);
+      alert('Erro ao enviar resposta');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Adicione esta função no componente, antes do return
+  const formatCurrency = (value: string) => {
+    // Remove tudo que não é número
+    const numbers = value.replace(/\D/g, '');
+
+    // Converte para número e formata
+    const amount = Number(numbers) / 100;
+
+    return amount.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
+
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCurrency(e.target.value);
+    setResponsePrice(formatted);
   };
 
   return (
@@ -107,7 +173,7 @@ export function SupplierDashboard() {
             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Ações Rápidas</h2>
               <div className="space-y-3">
-                <div className="w-full flex items-center space-x-3 p-3 text-left bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                <div className="w-full flex items-center space-x-3 p-3 text-left bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer">
                   <Edit className="w-5 h-5 text-blue-600" />
                   <button
                     onClick={() => navigate('/supplier-profile-edit')}
@@ -116,7 +182,7 @@ export function SupplierDashboard() {
                     Editar Perfil
                   </button>
                 </div>
-                <div className="w-full flex items-center space-x-3 p-3 text-left bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+                <div className="w-full flex items-center space-x-3 p-3 text-left bg-green-50 hover:bg-green-100 rounded-lg transition-colors cursor-pointer">
                   <Eye className="w-5 h-5 text-green-600" />
                   <button
                     onClick={() => navigate(`/supplier/${user?.id}`)}
@@ -125,7 +191,7 @@ export function SupplierDashboard() {
                     Ver Meu Perfil
                   </button>
                 </div>
-                <div className="w-full flex items-center space-x-3 p-3 text-left bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+                <div className="w-full flex items-center space-x-3 p-3 text-left bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors cursor-pointer">
                   <Star className="w-5 h-5 text-purple-600" />
                   <button
                     onClick={() => navigate('/supplier-reviews')}
@@ -133,43 +199,6 @@ export function SupplierDashboard() {
                   >
                     Minhas Avaliações
                   </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Profile Summary */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Resumo do Perfil</h2>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <img
-                    src={supplier?.avatar || ''}
-                    alt=""
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-semibold text-gray-900">{supplier?.companyName}</p>
-                    <p className="text-sm text-gray-600">{supplier?.location}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Avaliação</span>
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
-                    <span className="font-semibold">{supplier?.rating}</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Avaliações</span>
-                  <span className="font-semibold">{supplier?.reviewCount}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Status</span>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    supplier?.availability ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}>
-                    {supplier?.availability ? 'Disponível' : 'Indisponível'}
-                  </span>
                 </div>
               </div>
             </div>
@@ -189,68 +218,103 @@ export function SupplierDashboard() {
               {/* Tabs */}
               <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
                 <button
-                  onClick={() => setActiveTab('pending')}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-                    activeTab === 'pending'
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  onClick={() => setActiveTab('PENDING')}
+                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${activeTab === 'PENDING'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                    }`}
                 >
                   Pendentes ({stats.pending})
                 </button>
                 <button
-                  onClick={() => setActiveTab('responded')}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-                    activeTab === 'responded'
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  onClick={() => setActiveTab('RESPONDED')}
+                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${activeTab === 'RESPONDED'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                    }`}
                 >
                   Respondidas ({stats.responded})
                 </button>
                 <button
                   onClick={() => setActiveTab('all')}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-                    activeTab === 'all'
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${activeTab === 'all'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                    }`}
                 >
                   Todas ({stats.total})
                 </button>
               </div>
 
               {/* Quote Requests */}
-              {filteredQuotes.length > 0 ? (
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  <p className="mt-4 text-gray-600">Carregando...</p>
+                </div>
+              ) : filteredQuotes.length > 0 ? (
                 <div className="space-y-4">
                   {filteredQuotes.map((quote) => (
-                    <div key={quote.id} className="border border-gray-200 rounded-lg p-6">
+                    <div key={quote.id} className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
                             <User className="w-5 h-5 text-gray-600" />
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900">Cliente #{quote.organizerId}</p>
+                            <p className="font-semibold text-gray-900">
+                              {quote.organizer?.name || 'Cliente'}
+                            </p>
                             <p className="text-sm text-gray-600">
-                              {new Date(quote.createdAt).toLocaleDateString('pt-BR')}
+                              {quote.organizer?.email || ''}
                             </p>
                           </div>
                         </div>
-                        <span className={`px-3 py-1 text-sm rounded-full font-medium ${
-                          quote.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                          quote.status === 'responded' ? 'bg-green-100 text-green-700' :
-                          'bg-blue-100 text-blue-700'
-                        }`}>
-                          {quote.status === 'pending' ? 'Pendente' :
-                           quote.status === 'responded' ? 'Respondido' : 'Aceito'}
+                        <span className={`px-3 py-1 text-sm rounded-full font-medium ${quote.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                          quote.status === 'RESPONDED' ? 'bg-green-100 text-green-700' :
+                            quote.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-700' :
+                              'bg-gray-100 text-gray-700'
+                          }`}>
+                          {quote.status === 'PENDING' ? 'Pendente' :
+                            quote.status === 'RESPONDED' ? 'Respondido' :
+                              quote.status === 'ACCEPTED' ? 'Aceito' : 'Rejeitado'}
                         </span>
                       </div>
+
+                      {/* Event Info */}
+                      {quote.event && (
+                        <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                          <p className="font-semibold text-blue-900 mb-2 flex items-center">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {quote.event.title}
+                          </p>
+                          <div className="space-y-1 text-sm text-blue-700">
+                            <p className="flex items-center">
+                              <Calendar className="w-3 h-3 mr-2" />
+                              Data: {new Date(quote.event.date).toLocaleDateString('pt-BR')}
+                            </p>
+                            <p className="flex items-center">
+                              <MapPin className="w-3 h-3 mr-2" />
+                              Local: {quote.event.location}
+                            </p>
+                            {quote.event.guestCount && (
+                              <p className="flex items-center">
+                                <Users className="w-3 h-3 mr-2" />
+                                Convidados: {quote.event.guestCount}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       <div className="mb-4">
                         <p className="text-gray-900 font-medium mb-2">Solicitação:</p>
                         <p className="text-gray-700">{quote.message}</p>
                       </div>
+
+                      <p className="text-xs text-gray-500 mb-4">
+                        Recebido em {new Date(quote.createdAt).toLocaleDateString('pt-BR')} às {new Date(quote.createdAt).toLocaleTimeString('pt-BR')}
+                      </p>
 
                       {quote.response && (
                         <div className="bg-green-50 p-4 rounded-lg mb-4">
@@ -258,13 +322,13 @@ export function SupplierDashboard() {
                           <p className="text-green-700">{quote.response}</p>
                           {quote.price && (
                             <p className="text-green-700 font-semibold mt-2">
-                              Valor: R$ {quote.price.toLocaleString('pt-BR')}
+                              Valor: R$ {quote.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                             </p>
                           )}
                         </div>
                       )}
 
-                      {quote.status === 'pending' && (
+                      {quote.status === 'PENDING' && (
                         <div className="flex space-x-3">
                           <button
                             onClick={() => setSelectedQuote(quote.id)}
@@ -277,6 +341,19 @@ export function SupplierDashboard() {
                           </button>
                         </div>
                       )}
+
+                      {quote.status === 'RESPONDED' && (
+                        <button
+                          onClick={() => {
+                            setSelectedQuote(quote.id);
+                            setResponseMessage(quote.response || '');
+                            setResponsePrice(quote.price?.toString() || '');
+                          }}
+                          className="w-full py-2 px-4 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                        >
+                          Editar Resposta
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -284,13 +361,13 @@ export function SupplierDashboard() {
                 <div className="text-center py-12">
                   <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {activeTab === 'pending' ? 'Nenhuma solicitação pendente' :
-                     activeTab === 'responded' ? 'Nenhuma solicitação respondida' :
-                     'Nenhuma solicitação recebida'}
+                    {activeTab === 'PENDING' ? 'Nenhuma solicitação pendente' :
+                      activeTab === 'RESPONDED' ? 'Nenhuma solicitação respondida' :
+                        'Nenhuma solicitação recebida'}
                   </h3>
                   <p className="text-gray-600">
-                    {activeTab === 'pending' ? 'Novas solicitações aparecerão aqui' :
-                     'Suas respostas aparecerão aqui'}
+                    {activeTab === 'PENDING' ? 'Novas solicitações aparecerão aqui' :
+                      'Suas respostas aparecerão aqui'}
                   </p>
                 </div>
               )}
@@ -307,7 +384,11 @@ export function SupplierDashboard() {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Responder Solicitação</h2>
                 <button
-                  onClick={() => setSelectedQuote(null)}
+                  onClick={() => {
+                    setSelectedQuote(null);
+                    setResponseMessage('');
+                    setResponsePrice('');
+                  }}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   ✕
@@ -315,19 +396,16 @@ export function SupplierDashboard() {
               </div>
 
               <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Valor do Orçamento (R$)
-                  </label>
-                  <input
-                    type="number"
-                    value={responsePrice}
-                    onChange={(e) => setResponsePrice(e.target.value)}
-                    placeholder="Ex: 15000"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Valor do Orçamento (R$)
+                </label>
+                <input
+                  type="text"
+                  value={responsePrice}
+                  onChange={handleCurrencyChange}
+                  placeholder="R$ 0,00"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Mensagem de Resposta
@@ -343,16 +421,22 @@ export function SupplierDashboard() {
 
                 <div className="flex space-x-4">
                   <button
-                    onClick={() => setSelectedQuote(null)}
+                    onClick={() => {
+                      setSelectedQuote(null);
+                      setResponseMessage('');
+                      setResponsePrice('');
+                    }}
                     className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    disabled={submitting}
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={() => handleRespond(selectedQuote)}
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400"
+                    disabled={submitting}
                   >
-                    Enviar Resposta
+                    {submitting ? 'Enviando...' : 'Enviar Resposta'}
                   </button>
                 </div>
               </div>

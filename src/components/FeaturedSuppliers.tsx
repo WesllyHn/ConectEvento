@@ -1,8 +1,8 @@
 import React from 'react';
 import { Star, MapPin, ArrowRight, Lock } from 'lucide-react';
-import { mockSuppliers } from '../../data/mockData';
+import { mockSuppliers } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 export function FeaturedSuppliers() {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, MapPin, DollarSign, Calendar } from 'lucide-react';
+import { Search, MapPin, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function Hero() {

@@ -25,20 +25,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string, userType: 'organizer' | 'supplier'): Promise<boolean> => {
     try {
       const credentials: LoginCredentials = { email, password };
-      const loggedUser = await userService.loginUser(credentials);
-      console.log('Logged in user:', loggedUser);
-      // Verificar se o tipo do usuário corresponde ao selecionado
-      const normalizedUserType = loggedUser.type.toLowerCase();
+      const response = await userService.loginUser(credentials);
+      console.log('Login response:', response);
+
+      const userData = response.data;
+
+      const normalizedUserType = userData.type.toLowerCase();
       if (normalizedUserType !== userType) {
         return false;
       }
-      
-      // Normalizar o tipo para o formato esperado pelo frontend
-      const normalizedUser = {
-        ...loggedUser,
-        type: userType as 'organizer' | 'supplier'
+
+      const normalizedUser: User = {
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        type: userType as 'organizer' | 'supplier',
+        avatar: userData.avatar,
+        companyName: userData.companyName,
+        description: userData.description,
+        location: userData.location,
+        priceRange: userData.priceRange,
+        rating: userData.rating,
+        reviewCount: userData.reviewCount,
+        availability: userData.availability,
       };
-      
+
       setUser(normalizedUser);
       localStorage.setItem('user', JSON.stringify(normalizedUser));
       return true;
@@ -50,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (userData: Partial<User>): Promise<boolean> => {
     try {
+      
       const createUserData = {
         name: userData.name!,
         email: userData.email!,
@@ -60,7 +72,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         location: userData.location,
       };
       console.log("createUserData", createUserData)
-
       const newUser = await userService.createUser(createUserData);
       
       // Normalizar o tipo para o formato esperado pelo frontend

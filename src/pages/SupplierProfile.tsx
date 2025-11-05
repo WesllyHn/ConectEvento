@@ -1,87 +1,183 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Star, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Calendar, 
-  DollarSign, 
-  CheckCircle, 
-  Clock,
-  MessageSquare,
+import React, { useState, useEffect } from 'react';
+import {
+  MapPin,
+  CheckCircle,
   ArrowLeft,
-  Send,
-  X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Star,
+  User,
+  Calendar
 } from 'lucide-react';
-import { mockSuppliers, mockDetailedReviews, eventTypes, budgetRanges } from '../data/mockData';
-import { useAuth } from '../contexts/AuthContext';
+import {
+  Button,
+  Card,
+  Tag,
+  Modal,
+  Form,
+  Input,
+  Select,
+  Row,
+  Col,
+  Rate,
+  Empty,
+  Avatar,
+  Spin,
+  message
+} from 'antd';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { userService } from '../services/userService';
+import { quoteService } from '../services/quoteService';
+import { eventService } from '../services/eventService';
+import { uploadService } from '../services/uploadService';
+import { reviewService } from '../services/reviewService';
 
+const { TextArea } = Input;
+
+const eventTypeMap: Record<string, string> = {
+  WEDDING: 'Casamento',
+  BIRTHDAY: 'Aniversário',
+  CORPORATE: 'Corporativo',
+  PARTY: 'Festa',
+  OTHER: 'Outro'
+};
 
 export function SupplierProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  console.log("user", user)
   
-  // Verificar se o usuário está logado para acessar o perfil
-  React.useEffect(() => {
+  const [supplier, setSupplier] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [form] = Form.useForm();
+  const [events, setEvents] = useState<any[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+
+  useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);
-  
-  const [showQuoteModal, setShowQuoteModal] = useState(false);
-  const [showImageModal, setShowImageModal] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [quoteMessage, setQuoteMessage] = useState('');
-  const [eventDetails, setEventDetails] = useState({
-    eventType: '',
-    date: '',
-    location: '',
-    budget: '',
-    guestCount: '',
-    description: ''
-  });
 
-  const supplier = mockSuppliers.find(s => s.id === id);
+  useEffect(() => {
+    if (id) {
+      loadSupplierData();
+      loadSupplierReviews();
+    }
+  }, [id]);
 
-  if (!supplier) {
+  useEffect(() => {
+    if (user?.id) {
+      loadUserEvents();
+    }
+  }, [user?.id]);
+
+  const loadSupplierData = async () => {
+    if (!id) return;
+
+    try {
+      setLoading(true);
+      const userData = await userService.getUserById(id);
+      setSupplier(userData);
+
+      // Buscar imagens do portfólio
+      const images = await uploadService.getSupplierImages(id);
+      const imageUrls = images.map(img => uploadService.getImageUrl(img.id));
+      setPortfolioImages(imageUrls);
+
+      // Usar a primeira imagem do portfólio como avatar
+      if (imageUrls.length > 0) {
+        setAvatarUrl(imageUrls[0]);
+      } else if (userData.avatar) {
+        setAvatarUrl(userData.avatar);
+      }
+    } catch (error) {
+      console.error('Error loading supplier data:', error);
+      message.error('Erro ao carregar dados do fornecedor');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSupplierReviews = async () => {
+    if (!id) return;
+
+    try {
+      setLoadingReviews(true);
+      const reviewsData = await reviewService.getReviewsByUserId(id, 'SUPPLIER');
+      setReviews(reviewsData);
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  const loadUserEvents = async () => {
+    if (!user?.id) return;
+
+    try {
+      const userEvents = await eventService.getEventsByOrganizerId(user.id);
+      setEvents(userEvents);
+    } catch (error) {
+      console.error('Error loading events:', error);
+    }
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2"> </h1>
-          <button 
-            onClick={() => navigate('/suppliers')}
-            className="text-blue-600 hover:text-blue-700"
-          >
-            Voltar para fornecedores
-          </button>
-        </div>
+        <Spin size="large" />
       </div>
     );
   }
 
-  const handleQuoteSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isAuthenticated) {
+  if (!supplier) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Empty description="Fornecedor não encontrado">
+          <Button type="primary" onClick={() => navigate(user?.type === 'supplier' ? '/supplier-dashboard' : '/suppliers')}>
+            {user?.type == "supplier" ? 'Voltar para dashboard' : 'Voltar para fornecedores'}
+          </Button>
+        </Empty>
+      </div>
+    );
+  }
+
+  const handleQuoteSubmit = async (values: any) => {
+    if (!isAuthenticated || !user?.id || !id) {
       navigate('/login');
       return;
     }
-    
-    // Aqui seria enviada a solicitação via API
-    console.log('Solicitação enviada:', { supplierId: id, quoteMessage, eventDetails });
-    setShowQuoteModal(false);
-    setQuoteMessage('');
-    setEventDetails({
-      eventType: '',
-      date: '',
-      location: '',
-      budget: '',
-      guestCount: '',
-      description: ''
-    });
+
+    try {
+      setSubmitting(true);
+
+      await quoteService.createBudget({
+        eventId: values.eventId,
+        supplierId: id,
+        organizerId: user.id,
+        message: values.message
+      });
+
+      message.success('Solicitação de orçamento enviada com sucesso!');
+      setShowQuoteModal(false);
+      form.resetFields();
+    } catch (error) {
+      console.error('Error creating quote:', error);
+      message.error('Erro ao enviar solicitação de orçamento');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const openImageModal = (index: number) => {
@@ -90,158 +186,163 @@ export function SupplierProfile() {
   };
 
   const nextImage = () => {
-    setSelectedImageIndex((prev) => 
-      prev === supplier.portfolio.length - 1 ? 0 : prev + 1
+    setSelectedImageIndex((prev) =>
+      prev === portfolioImages.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
-    setSelectedImageIndex((prev) => 
-      prev === 0 ? supplier.portfolio.length - 1 : prev - 1
+    setSelectedImageIndex((prev) =>
+      prev === 0 ? portfolioImages.length - 1 : prev - 1
     );
   };
 
-  // Mock reviews data
-  const reviews = mockDetailedReviews.filter(review => review.supplierId === supplier.id);
+  const services = supplier?.services?.map((s: any) => s.service) || [];
 
   return (
     <>
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Back Button */}
           <button
-            onClick={() => navigate('/suppliers')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+            onClick={() => navigate(user?.type === 'supplier' ? '/supplier-dashboard' : '/suppliers')}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>Voltar para fornecedores</span>
+            <span>{user?.type == "supplier" ? 'Voltar para dashboard' : 'Voltar para fornecedores'}</span>
           </button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2">
-              {/* Header */}
-              <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex items-center space-x-6">
-                    <img
-                      src={supplier.avatar || ''}
-                      alt={supplier.companyName}
-                      className="w-24 h-24 rounded-full object-cover"
-                    />
-                    <div>
-                      <h1 className="text-3xl font-bold text-gray-900 mb-2">{supplier.companyName}</h1>
-                      <div className="flex items-center space-x-4 text-gray-600 mb-3">
-                        <div className="flex items-center space-x-1">
-                          <MapPin className="w-5 h-5" />
-                          <span>{supplier.location}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-5 h-5 text-yellow-400" fill="currentColor" />
-                          <span className="font-semibold">{supplier.rating}</span>
-                          <span>({supplier.reviewCount} avaliações)</span>
-                        </div>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={16}>
+              <Card className="mb-4">
+                <div className="flex items-start gap-6">
+                  <Avatar
+                    size={96}
+                    src={avatarUrl}
+                    alt={supplier.companyName}
+                  />
+                  <div className="flex-1">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{supplier.companyName}</h1>
+                    <div className="flex items-center gap-4 text-gray-600 mb-3">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-5 h-5" />
+                        <span>{supplier.location}</span>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          supplier.availability ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}>
-                          {supplier.availability ? '● Disponível' : '● Indisponível'}
-                        </span>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          supplier.priceRange === 'budget' ? 'bg-green-100 text-green-700' :
-                          supplier.priceRange === 'mid' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-purple-100 text-purple-700'
-                        }`}>
-                          {supplier.priceRange === 'budget' ? 'Econômico' :
-                           supplier.priceRange === 'mid' ? 'Intermediário' : 'Premium'}
-                        </span>
+                      <div className="flex items-center gap-1">
+                        <Rate disabled defaultValue={supplier.rating} />
+                        <span className="font-semibold">{supplier.rating}</span>
+                        <span>({supplier.reviewCount})</span>
                       </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Tag color={supplier.availability ? 'success' : 'error'}>
+                        {supplier.availability ? 'Disponível' : 'Indisponível'}
+                      </Tag>
+                      <Tag color={
+                        supplier.priceRange === 'BUDGET' ? 'green' :
+                          supplier.priceRange === 'MID' ? 'orange' : 'purple'
+                      }>
+                        {supplier.priceRange === 'BUDGET' ? 'Econômico' :
+                          supplier.priceRange === 'MID' ? 'Intermediário' : 'Premium'}
+                      </Tag>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{supplier.reviewCount}</div>
-                    <div className="text-sm text-blue-800">Avaliações</div>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{supplier.rating}</div>
-                    <div className="text-sm text-green-800">Nota Média</div>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">{supplier.services.length}</div>
-                    <div className="text-sm text-purple-800">Serviços</div>
-                  </div>
-                </div>
-
-                <p className="text-gray-700 text-lg leading-relaxed">{supplier.description}</p>
-              </div>
-
-              {/* Services */}
-              <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Serviços Oferecidos</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {supplier.services.map((service, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg"
-                    >
-                      <CheckCircle className="w-5 h-5 text-blue-600" />
-                      <span className="font-medium text-blue-900">{service}</span>
+                <Row gutter={16} className="mt-6">
+                  <Col span={8}>
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{reviews.length}</div>
+                      <div className="text-sm text-blue-800">Avaliações</div>
                     </div>
+                  </Col>
+                  <Col span={8}>
+                    <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{supplier.rating}</div>
+                      <div className="text-sm text-green-800">Nota Média</div>
+                    </div>
+                  </Col>
+                  <Col span={8}>
+                    <div className="text-center p-4 bg-purple-50 rounded-lg">
+                      <div className="text-2xl font-bold text-purple-600">{services.length}</div>
+                      <div className="text-sm text-purple-800">Serviços</div>
+                    </div>
+                  </Col>
+                </Row>
+
+                <p className="text-gray-700 text-lg mt-6">{supplier.description}</p>
+              </Card>
+
+
+              {services.length > 0 && <Card title="Serviços Oferecidos" className="mb-4">
+                <Row gutter={[8, 8]}>
+                  {services.map((service: string, index: number) => (
+                    <Col key={index} xs={24} sm={12} md={8}>
+                      <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-blue-600" />
+                        <span className="font-medium text-blue-900">{service}</span>
+                      </div>
+                    </Col>
                   ))}
-                </div>
-              </div>
+                </Row>
+              </Card>}
 
-              {/* Portfolio */}
-              {supplier.portfolio.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Portfólio</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {supplier.portfolio.map((image, index) => (
-                      <div
-                        key={index}
-                        className="relative group cursor-pointer"
-                        onClick={() => openImageModal(index)}
-                      >
-                        <img
-                          src={image}
-                          alt={`Portfolio ${index + 1}`}
-                          className="w-full h-48 object-cover rounded-lg transition-transform group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg" />
-                      </div>
+              {portfolioImages.length > 0 && (
+                <Card title="Portfólio" className="mb-4">
+                  <Row gutter={[8, 8]}>
+                    {portfolioImages.map((image: string, index: number) => (
+                      <Col key={index} xs={12} sm={8}>
+                        <div
+                          className="relative group cursor-pointer"
+                          onClick={() => openImageModal(index)}
+                        >
+                          <img
+                            src={image}
+                            alt={`Portfolio ${index + 1}`}
+                            className="w-full h-48 object-cover rounded-lg hover:opacity-90 transition"
+                          />
+                        </div>
+                      </Col>
                     ))}
-                  </div>
-                </div>
+                  </Row>
+                </Card>
               )}
 
-              {/* Reviews */}
-              <div className="bg-white rounded-xl shadow-sm p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Avaliações dos Clientes</h2>
-                {reviews.length > 0 ? (
-                  <div className="space-y-6">
-                    {reviews.map((review) => (
-                      <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                        <div className="flex items-center justify-between mb-3">
+              <Card title="Avaliações dos Clientes" className="mb-4">
+                {loadingReviews ? (
+                  <div className="text-center py-8">
+                    <Spin />
+                  </div>
+                ) : reviews.length > 0 ? (
+                  <div className="space-y-4">
+                    {reviews.map((review: any) => (
+                      <div key={review.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                        <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-medium text-gray-600">
-                                {review.organizerName.charAt(0)}
-                              </span>
+                            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
+                              <User className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">{review.organizerName}</p>
-                              <p className="text-sm text-gray-600">{review.eventType} • {new Date(review.date).toLocaleDateString('pt-BR')}</p>
+                              <p className="font-semibold text-gray-900">
+                                {review.organizer?.name || 'Organizador'}
+                              </p>
+                              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                <Calendar className="w-3 h-3" />
+                                <span>{new Date(review.createdAt).toLocaleDateString('pt-BR')}</span>
+                                {review.event && (
+                                  <>
+                                    <span>•</span>
+                                    <span>{eventTypeMap[review.event.type] || review.event.type}</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center">
+
+                          <div className="flex items-center space-x-1">
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
-                                className={`w-5 h-5 ${
+                                className={`w-4 h-4 ${
                                   i < review.rating ? 'text-yellow-400' : 'text-gray-300'
                                 }`}
                                 fill="currentColor"
@@ -249,245 +350,154 @@ export function SupplierProfile() {
                             ))}
                           </div>
                         </div>
-                        <p className="text-gray-700">{review.comment}</p>
+
+                        <p className="text-gray-700 mb-3">{review.comment}</p>
+
+                        {review.response && (
+                          <div className="bg-blue-50 p-3 rounded-lg mt-3">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span className="text-sm font-medium text-blue-900">
+                                Resposta do fornecedor
+                              </span>
+                              <span className="text-xs text-blue-600">
+                                {new Date(review.responseDate).toLocaleDateString('pt-BR')}
+                              </span>
+                            </div>
+                            <p className="text-blue-800 text-sm">{review.response}</p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-600">Ainda não há avaliações para este fornecedor.</p>
+                  <Empty description="Nenhuma avaliação disponível" />
                 )}
-              </div>
-            </div>
+              </Card>
+            </Col>
 
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Solicitar Orçamento</h3>
-                
+            <Col xs={24} lg={8}>
+              <Card title="Solicitar Orçamento" className="sticky top-8">
                 <div className="space-y-4 mb-6">
-                  <div className="flex items-center space-x-3 text-gray-600">
-                    <Phone className="w-5 h-5" />
-                    <span>Resposta em até 24h</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-gray-600">
-                    <Mail className="w-5 h-5" />
-                    <span>Orçamento gratuito</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-gray-600">
-                    <Calendar className="w-5 h-5" />
-                    <span>Sem compromisso</span>
-                  </div>
+                  <p className="text-gray-600">✓ Resposta em até 24h</p>
+                  <p className="text-gray-600">✓ Orçamento gratuito</p>
+                  <p className="text-gray-600">✓ Sem compromisso</p>
                 </div>
 
-                <button
+                <Button
+                  type="primary"
+                  block
+                  size="large"
                   onClick={() => setShowQuoteModal(true)}
                   disabled={!supplier.availability}
-                  className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {supplier.availability ? 'Solicitar Orçamento' : 'Indisponível'}
-                </button>
+                </Button>
 
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-3">Informações de Contato</h4>
+                <div className="mt-6 pt-6 border-t">
+                  <h4 className="font-semibold mb-3">Informações de Contato</h4>
                   <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center space-x-2">
-                      <Mail className="w-4 h-4" />
-                      <span>{supplier.email}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="w-4 h-4" />
-                      <span>{supplier.location}</span>
-                    </div>
+                    <p>📧 {supplier.email}</p>
+                    <p>📍 {supplier.location}</p>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
+              </Card>
+            </Col>
+          </Row>
         </div>
       </div>
 
-      {/* Quote Modal */}
-      {showQuoteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Solicitar Orçamento</h2>
-                <button
-                  onClick={() => setShowQuoteModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleQuoteSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tipo de Evento
-                    </label>
-                    <select
-                      value={eventDetails.eventType}
-                      onChange={(e) => setEventDetails(prev => ({ ...prev, eventType: e.target.value }))}
-                      required
-                     className="select-custom w-full"
-                    >
-                      <option value="">Selecione o tipo</option>
-                      {eventTypes.map((type) => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Data do Evento
-                    </label>
-                    <input
-                      type="date"
-                      value={eventDetails.date}
-                      onChange={(e) => setEventDetails(prev => ({ ...prev, date: e.target.value }))}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Local do Evento
-                    </label>
-                    <input
-                      type="text"
-                      value={eventDetails.location}
-                      onChange={(e) => setEventDetails(prev => ({ ...prev, location: e.target.value }))}
-                      required
-                      placeholder="Cidade ou endereço"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Número de Convidados
-                    </label>
-                    <input
-                      type="number"
-                      value={eventDetails.guestCount}
-                      onChange={(e) => setEventDetails(prev => ({ ...prev, guestCount: e.target.value }))}
-                      placeholder="Ex: 150"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Orçamento Estimado
-                  </label>
-                  <select
-                    value={eventDetails.budget}
-                    onChange={(e) => setEventDetails(prev => ({ ...prev, budget: e.target.value }))}
-                    required
-                    className="select-custom w-full"
-                  >
-                    <option value="">Selecione a faixa</option>
-                    <option value="Até R$ 5.000">Até R$ 5.000</option>
-                    {budgetRanges.map((range) => (
-                      <option key={range} value={range}>{range}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Detalhes Adicionais
-                  </label>
-                  <textarea
-                    value={eventDetails.description}
-                    onChange={(e) => setEventDetails(prev => ({ ...prev, description: e.target.value }))}
-                    rows={3}
-                    placeholder="Descreva detalhes específicos do seu evento..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Mensagem para o Fornecedor
-                  </label>
-                  <textarea
-                    value={quoteMessage}
-                    onChange={(e) => setQuoteMessage(e.target.value)}
-                    rows={4}
-                    required
-                    placeholder="Descreva o que você precisa e suas expectativas..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="flex space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowQuoteModal(false)}
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>Enviar Solicitação</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Image Modal */}
-      {showImageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
-          <div className="relative max-w-4xl w-full">
-            <button
-              onClick={() => setShowImageModal(false)}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-            >
-              <X className="w-8 h-8" />
-            </button>
-            
-            <img
-              src={supplier.portfolio[selectedImageIndex]}
-              alt={`Portfolio ${selectedImageIndex + 1}`}
-              className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+      <Modal
+        title="Solicitar Orçamento"
+        open={showQuoteModal}
+        onCancel={() => {
+          setShowQuoteModal(false);
+          form.resetFields();
+        }}
+        footer={null}
+        width={700}
+      >
+        <Form form={form} layout="vertical" onFinish={handleQuoteSubmit}>
+          <Form.Item
+            name="eventId"
+            label="Selecione o Evento"
+            rules={[{ required: true, message: 'Selecione um evento' }]}
+          >
+            <Select
+              placeholder="Selecione o evento para solicitar orçamento"
+              options={events.map(event => ({
+                label: `${event.title} - ${new Date(event.date).toLocaleDateString('pt-BR')}`,
+                value: event.id
+              }))}
             />
-            
-            {supplier.portfolio.length > 1 && (
+          </Form.Item>
+
+          <Form.Item
+            name="message"
+            label="Mensagem para o Fornecedor"
+            rules={[{ required: true, message: 'Digite uma mensagem' }]}
+          >
+            <TextArea rows={4} placeholder="Descreva o que você precisa..." />
+          </Form.Item>
+
+          <Form.Item className="mb-0">
+            <div className="flex gap-4">
+              <Button
+                onClick={() => {
+                  setShowQuoteModal(false);
+                  form.resetFields();
+                }}
+                block
+              >
+                Cancelar
+              </Button>
+              <Button type="primary" htmlType="submit" block loading={submitting}>
+                Enviar Solicitação
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        open={showImageModal}
+        onCancel={() => setShowImageModal(false)}
+        footer={null}
+        width="90%"
+        centered
+      >
+        {portfolioImages.length > 0 && (
+          <div className="relative">
+            <img
+              src={portfolioImages[selectedImageIndex]}
+              alt={`Portfolio ${selectedImageIndex + 1}`}
+              className="w-full h-auto max-h-[80vh] object-contain"
+            />
+
+            {portfolioImages.length > 1 && (
               <>
-                <button
+                <Button
+                  icon={<ChevronLeft />}
                   onClick={prevImage}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300"
-                >
-                  <ChevronLeft className="w-8 h-8" />
-                </button>
-                <button
+                  className="absolute left-4 top-1/2 -translate-y-1/2"
+                  shape="circle"
+                  size="large"
+                />
+                <Button
+                  icon={<ChevronRight />}
                   onClick={nextImage}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300"
-                >
-                  <ChevronRight className="w-8 h-8" />
-                </button>
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                  shape="circle"
+                  size="large"
+                />
               </>
             )}
-            
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm">
-              {selectedImageIndex + 1} de {supplier.portfolio.length}
+
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded">
+              {selectedImageIndex + 1} de {portfolioImages.length}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </>
   );
 }

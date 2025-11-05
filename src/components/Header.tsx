@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Bell, User, Menu, LogOut } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 export function Header() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -87,9 +87,6 @@ export function Header() {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                  <Bell className="w-5 h-5" />
-                </button>
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}

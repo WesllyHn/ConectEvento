@@ -1,5 +1,4 @@
 import { apiRequest } from './api';
-import { Review } from '../types';
 
 export interface CreateReviewData {
   supplierId: string;
@@ -9,67 +8,36 @@ export interface CreateReviewData {
   comment: string;
 }
 
-export interface UpdateReviewData {
-  rating?: number;
-  comment?: string;
+export interface UpdateReviewResponse {
+  response: string;
+  responseDate: string;
 }
 
 class ReviewService {
-  // Buscar todas as avaliações
-  async getAllReviews(): Promise<Review[]> {
- 
-    return [];
+  async getSuppliersToReview(organizerId: string): Promise<any[]> {
+    const response = await apiRequest(`/reviews/organizadorId/${organizerId}`) as any;
+    return response.data;
   }
 
-  // Buscar avaliações por fornecedor
-  async getReviewsBySupplier(supplierId: string): Promise<Review[]> {
- 
-    return [];
+  async getReviewsByUserId(userId: string, type: 'ORGANIZER' | 'SUPPLIER'): Promise<any[]> {
+    const response = await apiRequest(`/reviews/${userId}?type=${type}`) as any;
+    return response.data;
   }
 
-  // Buscar avaliações por organizador
-  async getReviewsByOrganizer(organizerId: string): Promise<Review[]> {
- 
-    return [];
+  async createReview(reviewData: CreateReviewData): Promise<any> {
+    const response = await apiRequest('/reviews/', {
+      method: 'POST',
+      body: JSON.stringify(reviewData),
+    }) as any;
+    return response.data;
   }
 
-  // Criar nova avaliação
-  async createReview(reviewData: CreateReviewData): Promise<Review> {
-    // Por enquanto simula criação até a API estar implementada
-    const newReview: Review = {
-      id: Date.now().toString(),
-      supplierId: reviewData.supplierId,
-      organizerId: reviewData.organizerId,
-      eventId: reviewData.eventId,
-      rating: reviewData.rating,
-      comment: reviewData.comment,
-      createdAt: new Date().toISOString(),
-    };
-    
-    console.log('Review created (mock):', newReview);
-    return newReview;
-  }
-
-  // Atualizar avaliação
-  async updateReview(reviewId: string, updateData: UpdateReviewData): Promise<Review> {
-    // Por enquanto simula atualização até a API estar implementada
-    console.log('Review updated (mock):', { reviewId, updateData });
-    
-    return {
-      id: reviewId,
-      supplierId: '',
-      organizerId: '',
-      eventId: '',
-      rating: updateData.rating || 5,
-      comment: updateData.comment || '',
-      createdAt: new Date().toISOString(),
-    };
-  }
-
-  // Deletar avaliação
-  async deleteReview(reviewId: string): Promise<void> {
-    // Por enquanto simula deleção até a API estar implementada
-    console.log('Review deleted (mock):', reviewId);
+  async respondToReview(reviewId: string, responseData: UpdateReviewResponse): Promise<any> {
+    const response = await apiRequest(`/reviews/${reviewId}`, {
+      method: 'PUT',
+      body: JSON.stringify(responseData),
+    }) as any;
+    return response.data;
   }
 }
 
