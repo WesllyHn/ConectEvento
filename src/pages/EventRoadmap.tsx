@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Space, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
@@ -20,16 +20,8 @@ export function EventRoadmap() {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [activeStatusFilter, setActiveStatusFilter] = useState<string>('all');
 
-  useEffect(() => {
-    if (eventId) {
-      loadEventData();
-      loadRoadmapItems();
-    }
-  }, [eventId]);
-
-  const loadEventData = async () => {
+  const loadEventData = useCallback(async () => {
     if (!eventId) return;
-
     try {
       const eventData = await eventService.getEventById(eventId);
       setEvent(eventData);
@@ -37,11 +29,10 @@ export function EventRoadmap() {
       console.error('Erro ao carregar evento:', error);
       message.error('Erro ao carregar dados do evento');
     }
-  };
+  }, [eventId]);
 
-  const loadRoadmapItems = async () => {
+  const loadRoadmapItems = useCallback(async () => {
     if (!eventId) return;
-
     try {
       setLoading(true);
       const items = await roadmapService.getRoadmapByEventId(eventId);
@@ -52,7 +43,14 @@ export function EventRoadmap() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    if (eventId) {
+      loadEventData();
+      loadRoadmapItems();
+    }
+  }, [eventId, loadEventData, loadRoadmapItems]);
 
   const updateItemStatus = async (itemId: string, newStatus: RoadmapItem['status']) => {
     try {

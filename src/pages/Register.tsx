@@ -47,7 +47,7 @@ export function Register() {
         await login(formData.email, formData.password, userType)
         navigate(userType === 'organizer' ? '/dashboard' : '/supplier-dashboard');
       }
-    } catch (err) {
+    } catch {
       setError('Erro ao criar conta. Tente novamente.');
     } finally {
       setIsLoading(false);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Tag,
@@ -10,9 +10,6 @@ import {
   Form,
   Input,
   InputNumber,
-  Select,
-  Row,
-  Col
 } from 'antd';
 import {
   Clock,
@@ -26,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { quoteService, UpdateQuoteData } from '../services/quoteService';
+import { quoteService } from '../services/quoteService';
 
 const { TextArea } = Input;
 
@@ -40,17 +37,8 @@ export function Quotes() {
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    loadBudgets();
-  }, [user, navigate]);
-
-  const loadBudgets = async () => {
+  const loadBudgets = useCallback(async () => {
     if (!user?.id) return;
-
     try {
       setLoading(true);
       const data = await quoteService.getBudgetsByUserId(user.id);
@@ -61,7 +49,15 @@ export function Quotes() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    loadBudgets();
+  }, [user, navigate, loadBudgets]);
 
   const handleRespond = (budget: any) => {
     setSelectedBudget(budget);

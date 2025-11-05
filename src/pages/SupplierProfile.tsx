@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   MapPin,
   CheckCircle,
@@ -61,6 +61,51 @@ export function SupplierProfile() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  
+  const loadSupplierData = useCallback(async () => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      const userData = await userService.getUserById(id);
+      setSupplier(userData);
+      const images = await uploadService.getSupplierImages(id);
+      const imageUrls = images.map(img => uploadService.getImageUrl(img.id));
+      setPortfolioImages(imageUrls);
+      if (imageUrls.length > 0) {
+        setAvatarUrl(imageUrls[0]);
+      } else if (userData.avatar) {
+        setAvatarUrl(userData.avatar);
+      }
+    } catch (error) {
+      console.error('Error loading supplier data:', error);
+      message.error('Erro ao carregar dados do fornecedor');
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  const loadSupplierReviews = useCallback(async () => {
+    if (!id) return;
+    try {
+      setLoadingReviews(true);
+      const reviewsData = await reviewService.getReviewsByUserId(id, 'SUPPLIER');
+      setReviews(reviewsData);
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    } finally {
+      setLoadingReviews(false);
+    }
+  }, [id]);
+
+  const loadUserEvents = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const userEvents = await eventService.getEventsByOrganizerId(user.id);
+      setEvents(userEvents);
+    } catch (error) {
+      console.error('Error loading events:', error);
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -73,65 +118,14 @@ export function SupplierProfile() {
       loadSupplierData();
       loadSupplierReviews();
     }
-  }, [id]);
+  }, [id, loadSupplierData, loadSupplierReviews]);
 
   useEffect(() => {
     if (user?.id) {
       loadUserEvents();
     }
-  }, [user?.id]);
+  }, [user?.id, loadUserEvents]);
 
-  const loadSupplierData = async () => {
-    if (!id) return;
-
-    try {
-      setLoading(true);
-      const userData = await userService.getUserById(id);
-      setSupplier(userData);
-
-      // Buscar imagens do portfólio
-      const images = await uploadService.getSupplierImages(id);
-      const imageUrls = images.map(img => uploadService.getImageUrl(img.id));
-      setPortfolioImages(imageUrls);
-
-      // Usar a primeira imagem do portfólio como avatar
-      if (imageUrls.length > 0) {
-        setAvatarUrl(imageUrls[0]);
-      } else if (userData.avatar) {
-        setAvatarUrl(userData.avatar);
-      }
-    } catch (error) {
-      console.error('Error loading supplier data:', error);
-      message.error('Erro ao carregar dados do fornecedor');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadSupplierReviews = async () => {
-    if (!id) return;
-
-    try {
-      setLoadingReviews(true);
-      const reviewsData = await reviewService.getReviewsByUserId(id, 'SUPPLIER');
-      setReviews(reviewsData);
-    } catch (error) {
-      console.error('Error loading reviews:', error);
-    } finally {
-      setLoadingReviews(false);
-    }
-  };
-
-  const loadUserEvents = async () => {
-    if (!user?.id) return;
-
-    try {
-      const userEvents = await eventService.getEventsByOrganizerId(user.id);
-      setEvents(userEvents);
-    } catch (error) {
-      console.error('Error loading events:', error);
-    }
-  };
 
   if (loading) {
     return (

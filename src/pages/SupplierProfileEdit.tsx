@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -42,15 +42,8 @@ export function SupplierProfileEdit() {
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  useEffect(() => {
-    if (user?.id) {
-      loadUserData();
-    }
-  }, [user?.id]);
-
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     if (!user?.id) return;
-
     try {
       setLoading(true);
       const userData = await userService.getUserById(user.id);
@@ -67,7 +60,6 @@ export function SupplierProfileEdit() {
         cnpjOrCpf: userData.cnpjOrCpf || ''
       });
 
-      // Carrega imagens do portfólio
       const images = await uploadService.getSupplierImages(user.id);
       setPortfolioImages(images);
     } catch (error) {
@@ -76,7 +68,13 @@ export function SupplierProfileEdit() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]); // Apenas user?.id, não inclua serviços
+
+  useEffect(() => {
+    if (user?.id) {
+      loadUserData();
+    }
+  }, [user?.id, loadUserData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

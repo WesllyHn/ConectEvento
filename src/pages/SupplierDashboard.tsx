@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MessageSquare,
@@ -28,15 +28,8 @@ export function SupplierDashboard() {
   const [responsePrice, setResponsePrice] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (user?.id) {
-      loadQuotes();
-    }
-  }, [user?.id]);
-
-  const loadQuotes = async () => {
+  const loadQuotes = useCallback(async () => {
     if (!user?.id) return;
-
     try {
       setLoading(true);
       const data = await quoteService.getBudgetsByUserId(user.id);
@@ -46,7 +39,13 @@ export function SupplierDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadQuotes();
+    }
+  }, [user?.id, loadQuotes]);
 
   const filteredQuotes = quotes.filter(quote => {
     if (activeTab === 'all') return true;

@@ -1,0 +1,182 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main, develop, pipeline]
+  pull_request:
+    branches: [main, develop, pipeline]
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  lint:
+    name: Lint e Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: TypeScript
+        run: npx tsc -b
+
+  test:
+    name: Testes
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Run Tests
+        run: npm run test:coverage
+        env:
+          CI: true
+
+      - name: Coverage Report
+        uses: davelosert/vitest-coverage-report-action@v2
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload Coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Build Project
+        run: npm run build
+        env:
+          CI: true
+
+      - name: Bundle Size
+        run: |
+          echo "Build size:"
+          du -sh dist
+          echo ""
+          echo "Main files:"
+          find dist -type f \( -name "*.js" -o -name "*.css" \) -exec du -h {} \; | sort -rh | head -10
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+          retention-days: 7
+
+  security:
+    name: Segurança
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Audit Report
+        run: npm audit --json > audit-report.json || true
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-report
+          path: audit-report.json
+          retention-days: 30
+
+  bundle-analysis:
+    name: Bundle Analysis
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Analyze
+        run: |
+          echo "## Bundle Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Total Size" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          du -sh dist >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Largest JavaScript Files" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          find dist -type f -name "*.js" -exec du -h {} \; | sort -rh | head -10 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### CSS Files" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          find dist -type f -name "*.css" -exec du -h {} \; >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

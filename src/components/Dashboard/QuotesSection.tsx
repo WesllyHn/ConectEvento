@@ -30,6 +30,7 @@ interface QuotesSectionProps {
 }
 
 export function QuotesSection({ quotes, onViewAll, onQuoteUpdate }: QuotesSectionProps) {
+  console.log('QuotesSection quotes:', onViewAll);
   const [updatingQuoteId, setUpdatingQuoteId] = React.useState<string | null>(null);
 
   const handleUpdateStatus = async (quote: Quote, status: 'ACCEPTED' | 'REJECTED') => {

@@ -54,13 +54,8 @@ export function RoadmapModal({ open, eventId, eventTitle, onCancel }: RoadmapMod
   const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    if (open && eventId) {
-      loadRoadmapItems();
-    }
-  }, [open, eventId]);
 
-  const loadRoadmapItems = async () => {
+  const loadRoadmapItems = React.useCallback(async () => {
     try {
       setLoading(true);
       const data = await roadmapService.getRoadmapByEventId(eventId);
@@ -71,7 +66,14 @@ export function RoadmapModal({ open, eventId, eventTitle, onCancel }: RoadmapMod
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    if (open && eventId) {
+      loadRoadmapItems();
+    }
+  }, [open, eventId, loadRoadmapItems]);
+
 
   const handleAdd = () => {
     setEditingItem(null);

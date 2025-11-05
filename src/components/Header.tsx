@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, User, Menu, LogOut } from 'lucide-react';
+import {User, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Header() {

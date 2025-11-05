@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -46,18 +46,12 @@ export function SupplierReviews() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    loadReviews();
-  }, [user?.id]);
-
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     if (!user?.id) return;
-
     try {
       setLoading(true);
       setError(null);
       const response = await reviewService.getReviewsByUserId(user.id, 'SUPPLIER');
-      
       const formattedReviews: ReviewWithResponse[] = response.map((review: any) => ({
         id: review.id,
         rating: review.rating,
@@ -68,7 +62,6 @@ export function SupplierReviews() {
         response: review.response,
         responseDate: review.responseDate
       }));
-
       setSupplierReviews(formattedReviews);
     } catch (err) {
       console.error('Erro ao carregar avaliações:', err);
@@ -76,7 +69,11 @@ export function SupplierReviews() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
 
   const stats = {
     total: supplierReviews.length,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Button,
@@ -14,7 +14,7 @@ import {
   message,
   Avatar
 } from 'antd';
-import { Award, Calendar, MapPin, Star, MessageSquare } from 'lucide-react';
+import { Award, Calendar, MapPin, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { reviewService, CreateReviewData, UpdateReviewResponse } from '../services/reviewService';
@@ -38,15 +38,7 @@ export function Reviews() {
 
   const isSupplier = user?.type === 'SUPPLIER';
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    loadData();
-  }, [user, navigate]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -69,7 +61,15 @@ export function Reviews() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, isSupplier]); // Apenas reativos
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    loadData();
+  }, [user, navigate, loadData]);
 
   const openReviewModal = (supplier: any) => {
     setSelectedSupplier(supplier);

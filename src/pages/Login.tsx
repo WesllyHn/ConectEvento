@@ -27,7 +27,7 @@ export function Login() {
       } else {
         setError('Email ou senha incorretos');
       }
-    } catch (err) {
+    } catch {
       setError('Erro ao fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);

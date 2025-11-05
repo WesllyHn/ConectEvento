@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Search, MessageSquare, TrendingUp, Plus, Clock, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Modal, Form, Input, Select, Button, Row, Col, Empty, message, Collapse } from 'antd';
 import { useAuth } from '../context/AuthContext';
@@ -27,17 +27,10 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [loadingQuotes, setLoadingQuotes] = useState(true);
   const [form] = Form.useForm();
-  console.log("userEvents", userEvents)
-  useEffect(() => {
-    if (user?.id) {
-      loadUserEvents();
-      loadUserQuotes();
-    }
-  }, [user?.id]);
+  console.log(loading, loadingQuotes);
 
-  const loadUserEvents = async () => {
+  const loadUserEvents = useCallback(async () => {
     if (!user?.id) return;
-
     try {
       setLoading(true);
       const events = await eventService.getEventsByOrganizer(user.id);
@@ -48,11 +41,10 @@ export function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]); // Inclua dependências internas
 
-  const loadUserQuotes = async () => {
+  const loadUserQuotes = useCallback(async () => {
     if (!user?.id) return;
-
     try {
       setLoadingQuotes(true);
       const quotes = await quoteService.getBudgetsByUserId(user.id);
@@ -63,7 +55,15 @@ export function Dashboard() {
     } finally {
       setLoadingQuotes(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadUserEvents();
+      loadUserQuotes();
+    }
+  }, [user?.id, loadUserEvents, loadUserQuotes]);
+
 
   const handleCreateEvent = async (values: any) => {
     if (!user?.id) {

@@ -211,7 +211,7 @@ describe('userService', () => {
 
       vi.mocked(api.apiRequest).mockResolvedValue(updatedSupplier);
 
-      const result = await userService.updateUser('2', updateData);
+      await userService.updateUser('2', updateData);
 
       expect(api.apiRequest).toHaveBeenCalledWith('/users/2', {
         method: 'PUT',

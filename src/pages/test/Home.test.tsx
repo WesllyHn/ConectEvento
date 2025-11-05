@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { expect, it, describe, vi, beforeEach } from 'vitest';
+import { expect, it, describe, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 
 // IMPORTANTE: Mocks devem vir ANTES de importar o componente Home
