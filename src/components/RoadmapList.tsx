@@ -1,7 +1,7 @@
 import { Empty, Spin } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { RoadmapItemCard } from './RoadmapItem';
-import { RoadmapItem } from '../../services/roadmapService';
+import { RoadmapItem } from '../services/roadmapService';
 
 interface RoadmapListProps {
   items: RoadmapItem[];

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Search, Shield, Star, MessageCircle } from 'lucide-react';
 
 const features = [

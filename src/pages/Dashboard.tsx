@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Search, MessageSquare, TrendingUp, Plus, Clock, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Modal, Form, Input, Select, Button, Row, Col, Empty, message, Collapse } from 'antd';
 import { useAuth } from '../context/AuthContext';

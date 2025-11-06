@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Star, MapPin } from 'lucide-react';
 import { Row, Col, Card, Tag, Empty, Spin, message } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
