@@ -1,0 +1,81 @@
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { RoadmapStats } from './RoadmapStats';
+
+describe('RoadmapStats', () => {
+  const mockStats = {
+    total: 10,
+    planning: 3,
+    searching: 2,
+    contracted: 4,
+    completed: 1,
+  };
+
+  const mockOnFilterChange = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should render all stat cards with correct values', () => {
+    render(
+      <RoadmapStats
+        stats={mockStats}
+        activeFilter="all"
+        onFilterChange={mockOnFilterChange}
+      />
+    );
+
+    expect(screen.getByText('Total')).toBeInTheDocument();
+    expect(screen.getByText('10')).toBeInTheDocument();
+    expect(screen.getByText('Planejando')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('Buscando')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('Contratado')).toBeInTheDocument();
+    expect(screen.getByText('4')).toBeInTheDocument();
+    expect(screen.getByText('Concluído')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+  });
+
+  it('should highlight active filter card', () => {
+    const { container } = render(
+      <RoadmapStats
+        stats={mockStats}
+        activeFilter="PLANNING"
+        onFilterChange={mockOnFilterChange}
+      />
+    );
+
+    const cards = container.querySelectorAll('.ant-card');
+    expect(cards[1]).toHaveClass('border-2');
+  });
+
+  it('should call onFilterChange when a card is clicked', () => {
+    render(
+      <RoadmapStats
+        stats={mockStats}
+        activeFilter="all"
+        onFilterChange={mockOnFilterChange}
+      />
+    );
+
+    const planningCard = screen.getByText('Planejando').closest('.ant-card');
+    fireEvent.click(planningCard!);
+
+    expect(mockOnFilterChange).toHaveBeenCalledWith('PLANNING');
+  });
+
+  it('should show "Filtro ativo" text on active filter', () => {
+    render(
+      <RoadmapStats
+        stats={mockStats}
+        activeFilter="CONTRACTED"
+        onFilterChange={mockOnFilterChange}
+      />
+    );
+
+    const activeTexts = screen.getAllByText('Filtro ativo');
+    expect(activeTexts).toHaveLength(1);
+  });
+});
