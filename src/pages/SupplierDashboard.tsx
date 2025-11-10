@@ -10,12 +10,43 @@ import {
   Edit,
   Star,
   User,
-  Filter,
   MapPin,
-  Users
+  Users,
+  DollarSign,
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { quoteService } from '../services/quoteService';
+
+// Componente de Stat Card colorido
+const ColoredStatCard = ({
+  title,
+  value,
+  icon: Icon,
+  gradient,
+  iconText
+}: {
+  title: string;
+  value: number;
+  icon: any;
+  gradient: string;
+  iconText: string;
+}) => (
+  <div className={`relative overflow-hidden rounded-2xl p-6 ${gradient} backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 group`}>
+    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8"></div>
+    <div className="relative z-10">
+      <div className="flex items-center justify-between mb-4">
+        <div className="w-12 h-12 bg-white/80 rounded-xl flex items-center justify-center shadow-lg transition-transform duration-300">
+          <Icon className={`w-6 h-6 text-${iconText} group-hover:scale-110 transition-transform duration-300`} />
+        </div>
+        <div className="text-3xl font-bold text-white">
+          {value}
+        </div>
+      </div>
+      <p className="text-white/90 font-medium text-sm">{title}</p>
+    </div>
+  </div>
+);
 
 export function SupplierDashboard() {
   const { user } = useAuth();
@@ -68,7 +99,6 @@ export function SupplierDashboard() {
     try {
       setSubmitting(true);
 
-      // Converte o valor formatado para número
       const valorNumerico = parseFloat(
         responsePrice
           .replace('R$', '')
@@ -95,14 +125,9 @@ export function SupplierDashboard() {
     }
   };
 
-  // Adicione esta função no componente, antes do return
   const formatCurrency = (value: string) => {
-    // Remove tudo que não é número
     const numbers = value.replace(/\D/g, '');
-
-    // Converte para número e formata
     const amount = Number(numbers) / 100;
-
     return amount.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL'
@@ -115,134 +140,136 @@ export function SupplierDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard do Fornecedor</h1>
-          <p className="text-gray-600 mt-2">Bem-vindo de volta, {user?.name}!</p>
+          <h1 className="text-4xl font-bold leading-tight bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent">
+            Dashboard do Fornecedor
+          </h1>
+          <p className="text-gray-600 mt-2 text-lg">
+            Bem-vindo de volta, <span className="font-semibold text-blue-600">{user?.name}</span>!
+          </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total de Solicitações</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-              </div>
-              <MessageSquare className="w-8 h-8 text-blue-600" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Pendentes</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
-              </div>
-              <Clock className="w-8 h-8 text-yellow-600" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Respondidas</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.responded}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Aceitas</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.accepted}</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-emerald-600" />
-            </div>
-          </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <ColoredStatCard
+            title="Total de Solicitações"
+            value={stats.total}
+            icon={MessageSquare}
+            gradient="bg-gradient-to-br from-blue-500 to-blue-700"
+            iconText="blue-600"
+          />
+          <ColoredStatCard
+            title="Pendentes"
+            value={stats.pending}
+            icon={Clock}
+            gradient="bg-gradient-to-br from-amber-500 to-amber-700"
+            iconText="amber-600"
+          />
+          <ColoredStatCard
+            title="Respondidas"
+            value={stats.responded}
+            icon={CheckCircle}
+            gradient="bg-gradient-to-br from-emerald-500 to-emerald-700"
+            iconText="emerald-600"
+          />
+          <ColoredStatCard
+            title="Aceitas"
+            value={stats.accepted}
+            icon={TrendingUp}
+            gradient="bg-gradient-to-br from-purple-500 to-purple-700"
+            iconText="purple-600"
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Quick Actions */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Ações Rápidas</h2>
-              <div className="space-y-3">
-                <div className="w-full flex items-center space-x-3 p-3 text-left bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer">
-                  <Edit className="w-5 h-5 text-blue-600" />
-                  <button
-                    onClick={() => navigate('/supplier-profile-edit')}
-                    className="text-blue-900 font-medium"
-                  >
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Ações Rápidas</h2>
+              </div>
+              <div className="p-6 space-y-3">
+                <button
+                  onClick={() => navigate('/supplier-profile-edit')}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:border-gray-300 group"
+                >
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Edit className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <span className="font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">
                     Editar Perfil
-                  </button>
-                </div>
-                <div className="w-full flex items-center space-x-3 p-3 text-left bg-green-50 hover:bg-green-100 rounded-lg transition-colors cursor-pointer">
-                  <Eye className="w-5 h-5 text-green-600" />
-                  <button
-                    onClick={() => navigate(`/supplier/${user?.id}`)}
-                    className="text-green-900 font-medium"
-                  >
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => navigate(`/supplier/${user?.id}`)}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:border-gray-300 group"
+                >
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Eye className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <span className="font-semibold text-gray-700 group-hover:text-emerald-600 transition-colors">
                     Ver Meu Perfil
-                  </button>
-                </div>
-                <div className="w-full flex items-center space-x-3 p-3 text-left bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors cursor-pointer">
-                  <Star className="w-5 h-5 text-purple-600" />
-                  <button
-                    onClick={() => navigate('/supplier-reviews')}
-                    className="text-purple-900 font-medium"
-                  >
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => navigate('/supplier-reviews')}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:border-gray-300 group"
+                >
+                  <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Star className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  <span className="font-semibold text-gray-700 group-hover:text-yellow-600 transition-colors">
                     Minhas Avaliações
-                  </button>
-                </div>
+                  </span>
+                </button>
               </div>
             </div>
           </div>
 
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Solicitações de Orçamento</h2>
-                <div className="flex items-center space-x-2">
-                  <Filter className="w-5 h-5 text-gray-400" />
-                  <span className="text-sm text-gray-600">Filtrar por:</span>
-                </div>
-              </div>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Solicitações de Orçamento</h2>
 
-              {/* Tabs */}
-              <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
-                <button
-                  onClick={() => setActiveTab('PENDING')}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${activeTab === 'PENDING'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                {/* Tabs */}
+                <div className="flex space-x-2 bg-gray-100 p-1.5 rounded-xl">
+                  <button
+                    onClick={() => setActiveTab('PENDING')}
+                    className={`flex-1 py-2.5 px-4 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                      activeTab === 'PENDING'
+                        ? 'bg-white text-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-gray-900'
                     }`}
-                >
-                  Pendentes ({stats.pending})
-                </button>
-                <button
-                  onClick={() => setActiveTab('RESPONDED')}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${activeTab === 'RESPONDED'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                  >
+                    Pendentes ({stats.pending})
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('RESPONDED')}
+                    className={`flex-1 py-2.5 px-4 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                      activeTab === 'RESPONDED'
+                        ? 'bg-white text-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-gray-900'
                     }`}
-                >
-                  Respondidas ({stats.responded})
-                </button>
-                <button
-                  onClick={() => setActiveTab('all')}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${activeTab === 'all'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                  >
+                    Respondidas ({stats.responded})
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('all')}
+                    className={`flex-1 py-2.5 px-4 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                      activeTab === 'all'
+                        ? 'bg-white text-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-gray-900'
                     }`}
-                >
-                  Todas ({stats.total})
-                </button>
+                  >
+                    Todas ({stats.total})
+                  </button>
+                </div>
               </div>
 
               {/* Quote Requests */}
@@ -252,16 +279,19 @@ export function SupplierDashboard() {
                   <p className="mt-4 text-gray-600">Carregando...</p>
                 </div>
               ) : filteredQuotes.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                   {filteredQuotes.map((quote) => (
-                    <div key={quote.id} className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
+                    <div
+                      key={quote.id}
+                      className="border-2 border-gray-100 rounded-xl p-6 hover:border-blue-200 hover:shadow-md transition-all duration-200"
+                    >
                       <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-gray-600" />
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900">
+                            <p className="font-bold text-gray-900">
                               {quote.organizer?.name || 'Cliente'}
                             </p>
                             <p className="text-sm text-gray-600">
@@ -269,36 +299,46 @@ export function SupplierDashboard() {
                             </p>
                           </div>
                         </div>
-                        <span className={`px-3 py-1 text-sm rounded-full font-medium ${quote.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                          quote.status === 'RESPONDED' ? 'bg-green-100 text-green-700' :
-                            quote.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-700' :
-                              'bg-gray-100 text-gray-700'
-                          }`}>
-                          {quote.status === 'PENDING' ? 'Pendente' :
-                            quote.status === 'RESPONDED' ? 'Respondido' :
-                              quote.status === 'ACCEPTED' ? 'Aceito' : 'Rejeitado'}
+                        <span
+                          className={`px-3 py-1.5 text-xs font-bold rounded-full ${
+                            quote.status === 'PENDING'
+                              ? 'bg-amber-100 text-amber-700'
+                              : quote.status === 'RESPONDED'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : quote.status === 'ACCEPTED'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {quote.status === 'PENDING'
+                            ? 'Pendente'
+                            : quote.status === 'RESPONDED'
+                            ? 'Respondido'
+                            : quote.status === 'ACCEPTED'
+                            ? 'Aceito'
+                            : 'Rejeitado'}
                         </span>
                       </div>
 
                       {/* Event Info */}
                       {quote.event && (
-                        <div className="bg-blue-50 p-4 rounded-lg mb-4">
-                          <p className="font-semibold text-blue-900 mb-2 flex items-center">
-                            <Calendar className="w-4 h-4 mr-2" />
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-xl mb-4 border border-blue-200">
+                          <p className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
                             {quote.event.title}
                           </p>
-                          <div className="space-y-1 text-sm text-blue-700">
-                            <p className="flex items-center">
-                              <Calendar className="w-3 h-3 mr-2" />
+                          <div className="space-y-2 text-sm text-blue-700">
+                            <p className="flex items-center gap-2">
+                              <Calendar className="w-3.5 h-3.5" />
                               Data: {new Date(quote.event.date).toLocaleDateString('pt-BR')}
                             </p>
-                            <p className="flex items-center">
-                              <MapPin className="w-3 h-3 mr-2" />
+                            <p className="flex items-center gap-2">
+                              <MapPin className="w-3.5 h-3.5" />
                               Local: {quote.event.location}
                             </p>
                             {quote.event.guestCount && (
-                              <p className="flex items-center">
-                                <Users className="w-3 h-3 mr-2" />
+                              <p className="flex items-center gap-2">
+                                <Users className="w-3.5 h-3.5" />
                                 Convidados: {quote.event.guestCount}
                               </p>
                             )}
@@ -307,20 +347,24 @@ export function SupplierDashboard() {
                       )}
 
                       <div className="mb-4">
-                        <p className="text-gray-900 font-medium mb-2">Solicitação:</p>
-                        <p className="text-gray-700">{quote.message}</p>
+                        <p className="text-gray-900 font-bold mb-2">Solicitação:</p>
+                        <p className="text-gray-700 bg-gray-50 p-3 rounded-lg leading-relaxed">
+                          {quote.message}
+                        </p>
                       </div>
 
                       <p className="text-xs text-gray-500 mb-4">
-                        Recebido em {new Date(quote.createdAt).toLocaleDateString('pt-BR')} às {new Date(quote.createdAt).toLocaleTimeString('pt-BR')}
+                        Recebido em {new Date(quote.createdAt).toLocaleDateString('pt-BR')} às{' '}
+                        {new Date(quote.createdAt).toLocaleTimeString('pt-BR')}
                       </p>
 
                       {quote.response && (
-                        <div className="bg-green-50 p-4 rounded-lg mb-4">
-                          <p className="text-sm text-green-800 font-medium mb-1">Sua resposta:</p>
-                          <p className="text-green-700">{quote.response}</p>
+                        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4 rounded-xl mb-4 border border-emerald-200">
+                          <p className="text-sm text-emerald-800 font-bold mb-2">Sua resposta:</p>
+                          <p className="text-emerald-700 leading-relaxed">{quote.response}</p>
                           {quote.price && (
-                            <p className="text-green-700 font-semibold mt-2">
+                            <p className="text-emerald-700 font-bold mt-3 flex items-center gap-2">
+                              <DollarSign className="w-4 h-4" />
                               Valor: R$ {quote.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                             </p>
                           )}
@@ -328,14 +372,14 @@ export function SupplierDashboard() {
                       )}
 
                       {quote.status === 'PENDING' && (
-                        <div className="flex space-x-3">
+                        <div className="flex gap-3">
                           <button
                             onClick={() => setSelectedQuote(quote.id)}
-                            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                            className="flex-1 bg-blue-600 text-white py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-colors font-semibold"
                           >
                             Responder
                           </button>
-                          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                          <button className="px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold">
                             Recusar
                           </button>
                         </div>
@@ -348,7 +392,7 @@ export function SupplierDashboard() {
                             setResponseMessage(quote.response || '');
                             setResponsePrice(quote.price?.toString() || '');
                           }}
-                          className="w-full py-2 px-4 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                          className="w-full py-2.5 px-4 border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 transition-colors font-semibold"
                         >
                           Editar Resposta
                         </button>
@@ -360,13 +404,16 @@ export function SupplierDashboard() {
                 <div className="text-center py-12">
                   <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {activeTab === 'PENDING' ? 'Nenhuma solicitação pendente' :
-                      activeTab === 'RESPONDED' ? 'Nenhuma solicitação respondida' :
-                        'Nenhuma solicitação recebida'}
+                    {activeTab === 'PENDING'
+                      ? 'Nenhuma solicitação pendente'
+                      : activeTab === 'RESPONDED'
+                      ? 'Nenhuma solicitação respondida'
+                      : 'Nenhuma solicitação recebida'}
                   </h3>
                   <p className="text-gray-600">
-                    {activeTab === 'PENDING' ? 'Novas solicitações aparecerão aqui' :
-                      'Suas respostas aparecerão aqui'}
+                    {activeTab === 'PENDING'
+                      ? 'Novas solicitações aparecerão aqui'
+                      : 'Suas respostas aparecerão aqui'}
                   </p>
                 </div>
               )}
@@ -377,8 +424,8 @@ export function SupplierDashboard() {
 
       {/* Response Modal */}
       {selectedQuote && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-2xl w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Responder Solicitação</h2>
@@ -388,25 +435,28 @@ export function SupplierDashboard() {
                     setResponseMessage('');
                     setResponsePrice('');
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  ✕
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="space-y-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Valor do Orçamento (R$)
-                </label>
-                <input
-                  type="text"
-                  value={responsePrice}
-                  onChange={handleCurrencyChange}
-                  placeholder="R$ 0,00"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Valor do Orçamento (R$)
+                  </label>
+                  <input
+                    type="text"
+                    value={responsePrice}
+                    onChange={handleCurrencyChange}
+                    placeholder="R$ 0,00"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
                     Mensagem de Resposta
                   </label>
                   <textarea
@@ -414,25 +464,25 @@ export function SupplierDashboard() {
                     onChange={(e) => setResponseMessage(e.target.value)}
                     rows={4}
                     placeholder="Descreva os detalhes do seu orçamento, o que está incluído, condições de pagamento, etc..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                 </div>
 
-                <div className="flex space-x-4">
+                <div className="flex gap-4">
                   <button
                     onClick={() => {
                       setSelectedQuote(null);
                       setResponseMessage('');
                       setResponsePrice('');
                     }}
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold"
                     disabled={submitting}
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={() => handleRespond(selectedQuote)}
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400"
+                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:bg-blue-400 font-semibold"
                     disabled={submitting}
                   >
                     {submitting ? 'Enviando...' : 'Enviar Resposta'}

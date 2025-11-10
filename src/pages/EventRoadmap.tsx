@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, Space, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { message } from 'antd';
+import { Plus } from 'lucide-react';
 import { roadmapService, RoadmapItem } from '../services/roadmapService';
 import { eventService, Event } from '../services/eventService';
 import { EventHeader } from '../components/EventHeader';
@@ -123,25 +123,24 @@ export function EventRoadmap() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Evento não encontrado</h1>
-            <Button
-              type="primary"
+            <button
               onClick={() => navigate('/dashboard')}
-              aria-label="Voltar ao Dashboard"
+              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold"
             >
               Voltar ao Dashboard
-            </Button>
+            </button>
           </div>
-        </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <EventHeader event={event} completionPercentage={completionPercentage} />
 
@@ -153,18 +152,17 @@ export function EventRoadmap() {
           />
         </div>
 
-        <Card className="mt-8">
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mt-8">
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">Roadmap do Evento</h2>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
+              <h2 className="text-2xl font-bold text-gray-900">Roadmap do Evento</h2>
+              <button
                 onClick={() => setShowAddModal(true)}
-                aria-label="Adicionar Item"
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold shadow-lg"
               >
+                <Plus className="w-5 h-5" />
                 Adicionar Item
-              </Button>
+              </button>
             </div>
 
             <RoadmapFilters
@@ -182,8 +180,8 @@ export function EventRoadmap() {
               onDelete={removeItem}
               onSearch={() => navigate('/suppliers')}
             />
-          </Space>
-        </Card>
+          </div>
+        </div>
       </div>
 
       <AddItemModal
