@@ -1,6 +1,6 @@
 // Hero.tsx
 import React, { useState } from 'react';
-import { Search, MapPin, DollarSign, Calendar, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
+import { Search, MapPin, DollarSign, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function Hero() {

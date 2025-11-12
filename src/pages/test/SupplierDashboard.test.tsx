@@ -98,37 +98,24 @@ describe('SupplierDashboard', () => {
   describe('Rendering', () => {
     it('should render dashboard header with user name', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Dashboard do Fornecedor')).toBeInTheDocument();
-        expect(screen.getByText(`Bem-vindo de volta, ${mockUser.name}!`)).toBeInTheDocument();
+        expect(screen.getByText(/Bem-vindo de volta,.*João Silva.*/)).toBeInTheDocument();
       });
     });
 
     it('should render all stats cards', async () => {
       renderComponent();
-
       await waitFor(() => {
-        expect(screen.getByText('Total de Solicitações')).toBeInTheDocument();
-        expect(screen.getByText('Pendentes')).toBeInTheDocument();
-        expect(screen.getByText('Respondidas')).toBeInTheDocument();
-        expect(screen.getByText('Aceitas')).toBeInTheDocument();
+        expect(screen.getByText(/Total de Solicitações/)).toBeInTheDocument();
+        expect(screen.getByText(/Pendentes/)).toBeInTheDocument();
+        expect(screen.getByText(/Respondidas/)).toBeInTheDocument();
+        expect(screen.getByText(/Aceitas/)).toBeInTheDocument();
       });
     });
 
-// it('should display correct stats numbers', async () => {
-    //   renderComponent();
-
-    //   await waitFor(() => {
-    //     const statsElements = screen.getAllByText('3');
-    //     expect(statsElements.length).toBeGreaterThan(0);
-    //     expect(screen.getByText('1')).toBeInTheDocument();
-    //   });
-    // });
-
     it('should render quick actions section', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Ações Rápidas')).toBeInTheDocument();
         expect(screen.getByText('Editar Perfil')).toBeInTheDocument();
@@ -138,18 +125,11 @@ describe('SupplierDashboard', () => {
     });
 
     it('should render tabs for filtering quotes', async () => {
-      const { container } = renderComponent();
-
+      renderComponent();
       await waitFor(() => {
-        const tabs = container.querySelectorAll('button');
-        const tabsArray = Array.from(tabs);
-        const pendingTab = tabsArray.find(tab => tab.textContent?.includes('Pendentes'));
-        const respondedTab = tabsArray.find(tab => tab.textContent?.includes('Respondidas'));
-        const allTab = tabsArray.find(tab => tab.textContent?.includes('Todas'));
-        
-        expect(pendingTab).toBeTruthy();
-        expect(respondedTab).toBeTruthy();
-        expect(allTab).toBeTruthy();
+        expect(screen.getByText(/Pendentes \(1\)/)).toBeInTheDocument();
+        expect(screen.getByText(/Respondidas \(1\)/)).toBeInTheDocument();
+        expect(screen.getByText(/Todas \(3\)/)).toBeInTheDocument();
       });
     });
   });
@@ -157,13 +137,11 @@ describe('SupplierDashboard', () => {
   describe('Data Loading', () => {
     it('should show loading state initially', () => {
       renderComponent();
-
       expect(screen.getByText('Carregando...')).toBeInTheDocument();
     });
 
     it('should load quotes on mount', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(quoteService.getBudgetsByUserId).toHaveBeenCalledWith(mockUser.id);
       });
@@ -171,7 +149,6 @@ describe('SupplierDashboard', () => {
 
     it('should display quotes after loading', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Maria Santos')).toBeInTheDocument();
         expect(screen.getByText('Preciso de buffet para 100 pessoas')).toBeInTheDocument();
@@ -180,9 +157,7 @@ describe('SupplierDashboard', () => {
 
     it('should handle loading error gracefully', async () => {
       (quoteService.getBudgetsByUserId as any).mockRejectedValue(new Error('API Error'));
-
       renderComponent();
-
       await waitFor(() => {
         expect(screen.queryByText('Carregando...')).not.toBeInTheDocument();
       });
@@ -192,7 +167,6 @@ describe('SupplierDashboard', () => {
   describe('Filtering', () => {
     it('should show pending quotes by default', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Maria Santos')).toBeInTheDocument();
         expect(screen.queryByText('Pedro Oliveira')).not.toBeInTheDocument();
@@ -201,19 +175,13 @@ describe('SupplierDashboard', () => {
 
     it('should filter by responded quotes when tab is clicked', async () => {
       const user = userEvent.setup();
-      const { container } = renderComponent();
-
+      renderComponent();
       await waitFor(() => {
         expect(screen.getByText('Maria Santos')).toBeInTheDocument();
       });
 
-      // Buscar tabs pelo container
-      const tabs = container.querySelectorAll('button');
-      const respondedTab = Array.from(tabs).find(tab => tab.textContent?.includes('Respondidas'));
-      
-      if (respondedTab) {
-        await user.click(respondedTab);
-      }
+      const respondedTab = screen.getByText(/Respondidas \(1\)/);
+      await user.click(respondedTab);
 
       await waitFor(() => {
         expect(screen.queryByText('Maria Santos')).not.toBeInTheDocument();
@@ -223,18 +191,13 @@ describe('SupplierDashboard', () => {
 
     it('should show all quotes when all tab is clicked', async () => {
       const user = userEvent.setup();
-      const { container } = renderComponent();
-
+      renderComponent();
       await waitFor(() => {
         expect(screen.getByText('Maria Santos')).toBeInTheDocument();
       });
 
-      const tabs = container.querySelectorAll('button');
-      const allTab = Array.from(tabs).find(tab => tab.textContent?.includes('Todas'));
-      
-      if (allTab) {
-        await user.click(allTab);
-      }
+      const allTab = screen.getByText(/Todas \(3\)/);
+      await user.click(allTab);
 
       await waitFor(() => {
         expect(screen.getByText('Maria Santos')).toBeInTheDocument();
@@ -247,15 +210,15 @@ describe('SupplierDashboard', () => {
   describe('Quote Display', () => {
     it('should display quote status badge correctly', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Pendente')).toBeInTheDocument();
+        expect(screen.getByText('Respondido')).toBeInTheDocument();
+        expect(screen.getByText('Aceito')).toBeInTheDocument();
       });
     });
 
     it('should display event information', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Casamento')).toBeInTheDocument();
         expect(screen.getByText(/São Paulo, SP/)).toBeInTheDocument();
@@ -265,7 +228,6 @@ describe('SupplierDashboard', () => {
 
     it('should display quote message', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Preciso de buffet para 100 pessoas')).toBeInTheDocument();
       });
@@ -273,7 +235,6 @@ describe('SupplierDashboard', () => {
 
     it('should display organizer information', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Maria Santos')).toBeInTheDocument();
         expect(screen.getByText('maria@example.com')).toBeInTheDocument();
@@ -282,7 +243,6 @@ describe('SupplierDashboard', () => {
 
     it('should show respond button for pending quotes', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Responder')).toBeInTheDocument();
         expect(screen.getByText('Recusar')).toBeInTheDocument();
@@ -291,18 +251,13 @@ describe('SupplierDashboard', () => {
 
     it('should show edit button for responded quotes', async () => {
       const user = userEvent.setup();
-      const { container } = renderComponent();
-
+      renderComponent();
       await waitFor(() => {
         expect(screen.getByText('Maria Santos')).toBeInTheDocument();
       });
 
-      const tabs = container.querySelectorAll('button');
-      const respondedTab = Array.from(tabs).find(tab => tab.textContent?.includes('Respondidas'));
-      
-      if (respondedTab) {
-        await user.click(respondedTab);
-      }
+      const respondedTab = screen.getByText(/Respondidas \(1\)/);
+      await user.click(respondedTab);
 
       await waitFor(() => {
         expect(screen.getByText('Editar Resposta')).toBeInTheDocument();
@@ -311,22 +266,17 @@ describe('SupplierDashboard', () => {
 
     it('should display response details for responded quotes', async () => {
       const user = userEvent.setup();
-      const { container } = renderComponent();
-
+      renderComponent();
       await waitFor(() => {
         expect(screen.getByText('Maria Santos')).toBeInTheDocument();
       });
 
-      const tabs = container.querySelectorAll('button');
-      const respondedTab = Array.from(tabs).find(tab => tab.textContent?.includes('Respondidas'));
-      
-      if (respondedTab) {
-        await user.click(respondedTab);
-      }
+      const respondedTab = screen.getByText(/Respondidas \(1\)/);
+      await user.click(respondedTab);
 
       await waitFor(() => {
         expect(screen.getByText('Orçamento enviado conforme solicitado')).toBeInTheDocument();
-        expect(screen.getByText(/R\$ 5\.000,00/)).toBeInTheDocument();
+        expect(screen.getByText(/Valor: R\$ 5.000,00/)).toBeInTheDocument();
       });
     });
   });
@@ -335,7 +285,6 @@ describe('SupplierDashboard', () => {
     it('should open modal when respond button is clicked', async () => {
       const user = userEvent.setup();
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Responder')).toBeInTheDocument();
       });
@@ -351,7 +300,6 @@ describe('SupplierDashboard', () => {
     it('should render modal form fields', async () => {
       const user = userEvent.setup();
       renderComponent();
-
       await waitFor(() => {
         const respondButton = screen.getByText('Responder');
         user.click(respondButton);
@@ -366,7 +314,6 @@ describe('SupplierDashboard', () => {
     it('should close modal when cancel is clicked', async () => {
       const user = userEvent.setup();
       renderComponent();
-
       await waitFor(() => {
         const respondButton = screen.getByText('Responder');
         user.click(respondButton);
@@ -388,28 +335,27 @@ describe('SupplierDashboard', () => {
     it('should close modal when X button is clicked', async () => {
       const user = userEvent.setup();
       renderComponent();
-
       await waitFor(() => {
         const respondButton = screen.getByText('Responder');
         user.click(respondButton);
       });
 
       await waitFor(() => {
-        const closeButton = screen.getByText('✕');
+        const closeButton = screen.getByLabelText('Fechar');
         expect(closeButton).toBeInTheDocument();
       });
 
-      const closeButton = screen.getByText('✕');
+      const closeButton = screen.getByLabelText('Fechar');
       await user.click(closeButton);
 
       await waitFor(() => {
         expect(screen.queryByText('Responder Solicitação')).not.toBeInTheDocument();
       });
     });
+
     it('should allow typing in price input', async () => {
       const user = userEvent.setup();
       renderComponent();
-
       await waitFor(() => {
         const respondButton = screen.getByText('Responder');
         user.click(respondButton);
@@ -424,13 +370,12 @@ describe('SupplierDashboard', () => {
       await user.clear(priceInput);
       await user.type(priceInput, '5000');
 
-      expect(priceInput.value.replace(/\s+/g, ' ')).toBe('R$ 50,00');
+      expect(priceInput.value).toBe('R$ 50,00'); // pode ser R$ 50,00 ou R$ 50,00 dependendo do formato, ajuste se necessário
     });
 
     it('should allow typing in message textarea', async () => {
       const user = userEvent.setup();
       renderComponent();
-
       await waitFor(() => {
         const respondButton = screen.getByText('Responder');
         user.click(respondButton);
@@ -451,7 +396,6 @@ describe('SupplierDashboard', () => {
     it('should submit response with correct data', async () => {
       const user = userEvent.setup();
       renderComponent();
-
       await waitFor(() => {
         const respondButton = screen.getByText('Responder');
         user.click(respondButton);
@@ -463,7 +407,7 @@ describe('SupplierDashboard', () => {
 
       const priceInput = screen.getByPlaceholderText('R$ 0,00');
       const messageInput = screen.getByPlaceholderText(/Descreva os detalhes/);
-      
+
       await user.clear(priceInput);
       await user.type(priceInput, '5000');
       await user.clear(messageInput);
@@ -485,7 +429,6 @@ describe('SupplierDashboard', () => {
       );
 
       renderComponent();
-
       await waitFor(() => {
         const respondButton = screen.getByText('Responder');
         user.click(respondButton);
@@ -497,7 +440,7 @@ describe('SupplierDashboard', () => {
 
       const priceInput = screen.getByPlaceholderText('R$ 0,00');
       const messageInput = screen.getByPlaceholderText(/Descreva os detalhes/);
-      
+
       await user.clear(priceInput);
       await user.type(priceInput, '5000');
       await user.clear(messageInput);
@@ -506,9 +449,8 @@ describe('SupplierDashboard', () => {
       const submitButton = screen.getByText('Enviar Resposta');
       await user.click(submitButton);
 
-      // Verificar estado de envio sem aguardar conclusão
       expect(screen.getByText('Enviando...')).toBeInTheDocument();
-      
+
       // Resolver a promise para cleanup
       if (resolveUpdate) resolveUpdate({});
     });
@@ -516,7 +458,6 @@ describe('SupplierDashboard', () => {
     it('should reload quotes after successful submission', async () => {
       const user = userEvent.setup();
       renderComponent();
-
       await waitFor(() => {
         expect(quoteService.getBudgetsByUserId).toHaveBeenCalledTimes(1);
       });
@@ -532,7 +473,7 @@ describe('SupplierDashboard', () => {
 
       const priceInput = screen.getByPlaceholderText('R$ 0,00');
       const messageInput = screen.getByPlaceholderText(/Descreva os detalhes/);
-      
+
       await user.clear(priceInput);
       await user.type(priceInput, '5000');
       await user.clear(messageInput);
@@ -550,9 +491,7 @@ describe('SupplierDashboard', () => {
   describe('Empty States', () => {
     it('should show empty state when no quotes are available', async () => {
       (quoteService.getBudgetsByUserId as any).mockResolvedValue([]);
-
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Nenhuma solicitação pendente')).toBeInTheDocument();
         expect(screen.getByText('Novas solicitações aparecerão aqui')).toBeInTheDocument();
@@ -562,32 +501,24 @@ describe('SupplierDashboard', () => {
     it('should show correct empty state message for each tab', async () => {
       const user = userEvent.setup();
       (quoteService.getBudgetsByUserId as any).mockResolvedValue([]);
-
-      const { container } = renderComponent();
+      renderComponent();
 
       await waitFor(() => {
         expect(screen.getByText('Nenhuma solicitação pendente')).toBeInTheDocument();
       });
 
-      const tabs = container.querySelectorAll('button');
-      const respondedTab = Array.from(tabs).find(tab => tab.textContent?.includes('Respondidas'));
-      
-      if (respondedTab) {
-        await user.click(respondedTab);
-      }
-
+      const respondedTab = screen.getByText(/Respondidas/);
+      await user.click(respondedTab);
       await waitFor(() => {
         expect(screen.getByText('Nenhuma solicitação respondida')).toBeInTheDocument();
+        expect(screen.getByText('Suas respostas aparecerão aqui')).toBeInTheDocument();
       });
 
-      const allTab = Array.from(tabs).find(tab => tab.textContent?.includes('Todas'));
-      
-      if (allTab) {
-        await user.click(allTab);
-      }
-
+      const allTab = screen.getByText(/Todas/);
+      await user.click(allTab);
       await waitFor(() => {
         expect(screen.getByText('Nenhuma solicitação recebida')).toBeInTheDocument();
+        expect(screen.getByText('Suas respostas aparecerão aqui')).toBeInTheDocument();
       });
     });
   });
@@ -595,7 +526,6 @@ describe('SupplierDashboard', () => {
   describe('Navigation', () => {
     it('should have working navigation buttons', async () => {
       renderComponent();
-
       await waitFor(() => {
         expect(screen.getByText('Editar Perfil')).toBeInTheDocument();
         expect(screen.getByText('Ver Meu Perfil')).toBeInTheDocument();

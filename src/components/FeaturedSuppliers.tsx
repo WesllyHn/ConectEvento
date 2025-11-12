@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Star, MapPin, ArrowRight, Award, Loader2, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, MapPin, ArrowRight, Award, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/userService';

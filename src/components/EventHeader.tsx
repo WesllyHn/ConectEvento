@@ -25,7 +25,7 @@ export function EventHeader({ event, completionPercentage }: EventHeaderProps) {
         onClick={() => navigate('/dashboard')}
         className="flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-6 transition-colors group"
       >
-        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" aria-label="back-arrow" />
         <span className="font-medium">Voltar ao Dashboard</span>
       </button>
 
@@ -36,17 +36,17 @@ export function EventHeader({ event, completionPercentage }: EventHeaderProps) {
 
             <div className="flex flex-wrap gap-6">
               <div className="flex items-center gap-2 text-gray-700">
-                <Calendar className="w-5 h-5 text-blue-600" />
+                <Calendar className="w-5 h-5 text-blue-600" aria-label='calendar' />
                 <span className="font-medium">{new Date(event.date).toLocaleDateString('pt-BR')}</span>
               </div>
 
               <div className="flex items-center gap-2 text-gray-700">
-                <MapPin className="w-5 h-5 text-blue-600" />
+                <MapPin className="w-5 h-5 text-blue-600" aria-label='location' />
                 <span className="font-medium">{event.location}</span>
               </div>
 
               <div className="flex items-center gap-2 text-gray-700">
-                <DollarSign className="w-5 h-5 text-blue-600" />
+                <DollarSign className="w-5 h-5 text-blue-600" aria-label='budget'/>
                 <span className="font-medium">{event.budget}</span>
               </div>
             </div>

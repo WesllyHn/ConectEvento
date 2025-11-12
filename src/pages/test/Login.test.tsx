@@ -90,22 +90,22 @@ describe('Login', () => {
       expect(screen.getByText(/Email ou senha incorretos/i)).toBeInTheDocument();
     });
   });
+it('deve alternar entre organizador e fornecedor', async () => {
+  const user = userEvent.setup();
 
-  it('deve alternar entre organizador e fornecedor', async () => {
-    const user = userEvent.setup();
+  render(
+    <MemoryRouter>
+      <Login />
+    </MemoryRouter>
+  );
 
-    render(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>
-    );
+  const fornecedorButton = screen.getByText('Fornecedor');
+  await user.click(fornecedorButton);
 
-    const fornecedorButton = screen.getByText('Fornecedor');
-    await user.click(fornecedorButton);
+  expect(fornecedorButton).toHaveClass('border-blue-600');
+  expect(fornecedorButton).toHaveClass('shadow-lg');
+});
 
-    // Verifica se o botão fornecedor está ativo
-    expect(fornecedorButton).toHaveClass('bg-blue-600');
-  });
 
   it('deve alternar visibilidade da senha', async () => {
     const user = userEvent.setup();
