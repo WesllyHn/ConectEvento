@@ -1,4 +1,4 @@
-import { Card, Tag, Statistic, Input, Select, Button } from 'antd';
+import { Input, Select } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
@@ -153,7 +153,7 @@ export function SearchFilters({
               prefix={<SearchOutlined className="text-gray-400" />}
               placeholder="Buscar..."
               value={searchValue}
-              onChange={(e) => onSearchChange(e.target.value)}
+              onChange={(e: any) => onSearchChange(e.target.value)}
               size="large"
               className="rounded-xl"
             />
@@ -165,7 +165,7 @@ export function SearchFilters({
             <Input
               placeholder="Localização..."
               value={locationValue}
-              onChange={(e) => onLocationChange(e.target.value)}
+              onChange={(e: any) => onLocationChange(e.target.value)}
               size="large"
               className="rounded-xl"
             />

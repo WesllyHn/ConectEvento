@@ -8,7 +8,6 @@ import {
   Plus,
   Camera,
   Building,
-  MapPin,
   Mail,
   DollarSign,
   Tag,
@@ -18,6 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/userService';
 import { uploadService, UploadedImage } from '../services/uploadService';
 import { message, Spin } from 'antd';
+import { CityAutocomplete } from '../components/CityAutocomplete';
 
 export function SupplierProfileEdit() {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ export function SupplierProfileEdit() {
   const formatCnpjCpf = (value: string) => {
     // Remove tudo que não é dígito
     const numbers = value.replace(/\D/g, '');
-    
+
     // CPF: 000.000.000-00
     if (numbers.length <= 11) {
       return numbers
@@ -56,7 +56,7 @@ export function SupplierProfileEdit() {
         .replace(/(\d{3})(\d{1,2})/, '$1-$2')
         .replace(/(-\d{2})\d+?$/, '$1');
     }
-    
+
     // CNPJ: 00.000.000/0000-00
     return numbers
       .replace(/(\d{2})(\d)/, '$1.$2')
@@ -73,15 +73,15 @@ export function SupplierProfileEdit() {
 
   const validateCnpjCpf = (value: string) => {
     const numbers = value.replace(/\D/g, '');
-    
+
     // Se está vazio, é válido (campo opcional)
     if (numbers.length === 0) return true;
-    
+
     // Se tem até 11 dígitos, valida como CPF (mínimo 11)
     if (numbers.length <= 11) {
       return numbers.length === 11;
     }
-    
+
     // Se tem mais de 11 dígitos, valida como CNPJ (deve ter 14)
     return numbers.length === 14;
   };
@@ -91,7 +91,7 @@ export function SupplierProfileEdit() {
     try {
       setLoading(true);
       const userData = await userService.getUserById(user.id);
-      console.log("userData", userData)
+
 
       setProfileData({
         name: userData.name || '',
@@ -253,7 +253,7 @@ export function SupplierProfileEdit() {
             onClick={() => navigate('/supplier-dashboard')}
             className="flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-4 transition-colors group"
           >
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform group-hover:-translate-x-1 transition-transform" />
             <span className="font-medium">Voltar ao Dashboard</span>
           </button>
 
@@ -296,11 +296,10 @@ export function SupplierProfileEdit() {
                   type="text"
                   value={profileData.cnpjOrCpf}
                   onChange={handleCnpjCpfChange}
-                  className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all ${
-                    profileData.cnpjOrCpf && !validateCnpjCpf(profileData.cnpjOrCpf)
+                  className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all ${profileData.cnpjOrCpf && !validateCnpjCpf(profileData.cnpjOrCpf)
                       ? 'border-red-300 focus:border-red-500'
                       : 'border-gray-300 focus:border-blue-500'
-                  }`}
+                    }`}
                   placeholder="000.000.000-00 ou 00.000.000/0000-00"
                   maxLength={18}
                 />
@@ -333,22 +332,13 @@ export function SupplierProfileEdit() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Localização *
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    value={profileData.location}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
-                    required
-                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    placeholder="Cidade, Estado"
-                  />
-                </div>
-              </div>
+              <CityAutocomplete
+                value={profileData.location}
+                onChange={(city) => setProfileData(prev => ({ ...prev, location: city }))}
+                required
+                placeholder="Cidade, Estado"
+                label="Localização"
+              />
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">

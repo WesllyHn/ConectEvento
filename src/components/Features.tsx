@@ -1,8 +1,7 @@
-import { Search, Star, ArrowRight, FileText, Calendar, Loader2 } from 'lucide-react';
+import { Search, Star, ArrowRight, FileText, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { userService } from '../services/userService';
-import { eventService } from '../services/eventService';
 
 const features = [
   {

@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Search, MessageSquare, TrendingUp, Plus, Clock, CheckCircle, ChevronDown, ChevronUp, MoreVertical, Star } from 'lucide-react';
-import { Modal, Form, Input, Select, Button, Row, Col, Empty, message, Collapse, Dropdown } from 'antd';
+import { Calendar, Search, MessageSquare, TrendingUp, Plus, Clock, CheckCircle, ChevronDown, ChevronUp, MoreVertical, Star, MapPin, X, Building2, Home } from 'lucide-react';
+import { Modal, Form, Input, Select, Button, Row, Col, Empty, message, Collapse, Dropdown, Radio, InputNumber, DatePicker } from 'antd';
 import { useAuth } from '../context/AuthContext';
 import { eventTypes, budgetRanges } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
-import { StatCard, DataCard, ActionButton } from '../components/Common';
+import { DataCard } from '../components/Common';
 import { eventService, Event } from '../services/eventService';
 import { quoteService } from '../services/quoteService';
 import { QuotesSection } from '../components/Dashboard';
 import { RoadmapModal } from '../components/RoadmapModal';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import { LocationAutocomplete } from '../components/LocationAutocomplete';
 dayjs.extend(isSameOrAfter);
 
 const { TextArea } = Input;
 const { Panel } = Collapse;
+
+interface LocationResult {
+  name: string;
+  type: 'city' | 'neighborhood' | 'address';
+  fullName: string;
+  state?: string;
+  city?: string;
+}
 
 // Componente de Stat Card customizado com cores
 const ColoredStatCard = ({
@@ -31,7 +40,6 @@ const ColoredStatCard = ({
   iconText: string;
 }) => (
   <div className={`relative overflow-hidden rounded-2xl p-6 ${gradient} backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 group`}>
-    {/* Background decorativo */}
     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8"></div>
 
     <div className="relative z-10">
@@ -59,6 +67,12 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [loadingQuotes, setLoadingQuotes] = useState(true);
   const [form] = Form.useForm();
+
+  const [locationQuery, setLocationQuery] = useState('');
+
+  const [budgetType, setBudgetType] = useState<'predefined' | 'custom'>('predefined');
+  const [customBudgetMin, setCustomBudgetMin] = useState('');
+  const [customBudgetMax, setCustomBudgetMax] = useState('');
 
   useEffect(() => {
     if (user?.id) {
@@ -97,22 +111,78 @@ export function Dashboard() {
     }
   };
 
+  const formatCurrency = (value: string): string => {
+    const numbers = value.replace(/\D/g, '');
+
+    if (!numbers) return '';
+
+    const amount = parseInt(numbers) / 100;
+    return amount.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  const handleCurrencyInput = (value: string, setter: (val: string) => void) => {
+    const formatted = formatCurrency(value);
+    setter(formatted);
+  };
+
   const handleCreateEvent = async (values: any) => {
     if (!user?.id) {
       message.error('Usuário não autenticado');
       return;
     }
 
+    if (!locationQuery || locationQuery.trim().length === 0) {
+      message.error('Digite o local do evento');
+      return;
+    }
+
+    let finalBudget = '';
+    if (budgetType === 'custom') {
+      if (!customBudgetMin || customBudgetMin.trim() === '') {
+        message.error('Digite o valor mínimo do orçamento');
+        return;
+      }
+      if (!customBudgetMax || customBudgetMax.trim() === '') {
+        message.error('Digite o valor máximo do orçamento');
+        return;
+      }
+
+      const minValue = parseFloat(customBudgetMin.replace(/\./g, '').replace(',', '.'));
+      const maxValue = parseFloat(customBudgetMax.replace(/\./g, '').replace(',', '.'));
+
+      if (minValue >= maxValue) {
+        message.error('O valor máximo deve ser maior que o mínimo');
+        return;
+      }
+
+      finalBudget = `R$ ${customBudgetMin} - R$ ${customBudgetMax}`;
+    } else {
+      if (!values.budget) {
+        message.error('Selecione uma faixa de orçamento');
+        return;
+      }
+      finalBudget = values.budget;
+    }
+
     try {
       await eventService.createEvent({
         ...values,
-        date: new Date(values.date).toISOString(),
+        budget: finalBudget,
+        location: locationQuery.trim(),
+        date: values.date.format('YYYY-MM-DD') + 'T00:00:00.000Z',
         guestCount: Number(values.guestCount),
         organizerId: user.id,
       });
       message.success('Evento criado com sucesso!');
       setShowCreateEventModal(false);
       form.resetFields();
+      setLocationQuery('');
+      setBudgetType('predefined');
+      setCustomBudgetMin('');
+      setCustomBudgetMax('');
       await loadUserEvents();
     } catch (error) {
       console.error('Error creating event:', error);
@@ -427,6 +497,10 @@ export function Dashboard() {
         onCancel={() => {
           setShowCreateEventModal(false);
           form.resetFields();
+          setLocationQuery('');
+          setBudgetType('predefined');
+          setCustomBudgetMin('');
+          setCustomBudgetMax('');
         }}
         footer={null}
         width={700}
@@ -474,10 +548,12 @@ export function Dashboard() {
                   }
                 ]}
               >
-                <Input
-                  type="date"
+                <DatePicker
                   size="large"
-                  min={dayjs().format('YYYY-MM-DD')}
+                  placeholder="Selecione a data do evento"
+                  format="DD/MM/YYYY"
+                  disabledDate={(current) => current && current < dayjs().startOf('day')}
+                  className="w-full"
                 />
               </Form.Item>
             </Col>
@@ -486,11 +562,13 @@ export function Dashboard() {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                name="location"
-                label="Local do Evento"
-                rules={[{ required: true, message: 'Digite o local' }]}
+                label={<span>Local do Evento <span className="text-red-500">*</span></span>}
               >
-                <Input placeholder="Cidade, bairro ou endereço" size="large" />
+                <LocationAutocomplete
+                  value={locationQuery}
+                  onChange={setLocationQuery}
+                  placeholder="Ex: Rua das Flores, 123 ou São Paulo, SP"
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -500,16 +578,78 @@ export function Dashboard() {
             </Col>
           </Row>
 
-          <Form.Item
-            name="budget"
-            label="Orçamento Estimado"
-            rules={[{ required: true, message: 'Selecione o orçamento' }]}
-          >
-            <Select
-              placeholder="Selecione a faixa de orçamento"
-              size="large"
-              options={budgetRanges.map(range => ({ label: range, value: range }))}
-            />
+          <Form.Item label="Orçamento Estimado">
+            <div className="space-y-3">
+              <Radio.Group
+                value={budgetType}
+                onChange={(e) => {
+                  setBudgetType(e.target.value);
+                  if (e.target.value === 'predefined') {
+                    setCustomBudgetMin('');
+                    setCustomBudgetMax('');
+                  } else {
+                    form.setFieldValue('budget', undefined);
+                  }
+                }}
+                className="w-full"
+              >
+                <div className="space-y-2">
+                  <Radio value="predefined" className="w-full">
+                    <span className="font-medium">Faixas predefinidas</span>
+                  </Radio>
+                  <Radio value="custom" className="w-full">
+                    <span className="font-medium">Valor personalizado</span>
+                  </Radio>
+                </div>
+              </Radio.Group>
+
+              {budgetType === 'predefined' && (
+                <Form.Item
+                  name="budget"
+                  rules={[{ required: budgetType === 'predefined', message: 'Selecione uma faixa de orçamento' }]}
+                  className="mb-0"
+                >
+                  <Select
+                    placeholder="Selecione a faixa de orçamento"
+                    size="large"
+                    options={budgetRanges.map(range => ({ label: range, value: range }))}
+                  />
+                </Form.Item>
+              )}
+
+              {budgetType === 'custom' && (
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Faixa de Orçamento
+                  </label>
+                  <Row gutter={12} align="middle">
+                    <Col span={11}>
+                      <Input
+                        value={customBudgetMin}
+                        onChange={(e) => handleCurrencyInput(e.target.value, setCustomBudgetMin)}
+                        placeholder="0,00"
+                        size="large"
+                        prefix={<span className="text-gray-500 font-medium">R$</span>}
+                        className="text-right"
+                      />
+                    </Col>
+                    <Col span={2} className="text-center">
+                      <span className="text-gray-400 font-bold text-lg">—</span>
+                    </Col>
+                    <Col span={11}>
+                      <Input
+                        value={customBudgetMax}
+                        onChange={(e) => handleCurrencyInput(e.target.value, setCustomBudgetMax)}
+                        placeholder="0,00"
+                        size="large"
+                        prefix={<span className="text-gray-500 font-medium">R$</span>}
+                        className="text-right"
+                      />
+                    </Col>
+                  </Row>
+                </div>
+              )}
+            </div>
           </Form.Item>
 
           <Form.Item name="description" label="Descrição Adicional">
@@ -525,6 +665,10 @@ export function Dashboard() {
                 onClick={() => {
                   setShowCreateEventModal(false);
                   form.resetFields();
+                  setLocationQuery('');
+                  setBudgetType('predefined');
+                  setCustomBudgetMin('');
+                  setCustomBudgetMax('');
                 }}
                 block
                 size="large"
