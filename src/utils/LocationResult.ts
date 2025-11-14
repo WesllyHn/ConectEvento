@@ -8,6 +8,80 @@ export interface LocationResult {
   city?: string;
 }
 
+const getCityName = (address: any): string => {
+  return address.city || address.town || address.village || address.municipality || '';
+};
+
+const processAddressType = (address: any): LocationResult => {
+  const road = address.road || address.street;
+  const suburb = address.suburb || address.neighbourhood || '';
+  const city = getCityName(address);
+  const state = address.state || '';
+  const parts = [road];
+  if (suburb) parts.push(suburb);
+  if (city) parts.push(city);
+  if (state) parts.push(state);
+  return {
+    name: road,
+    type: 'address',
+    fullName: parts.join(', '),
+    state: address.state,
+    city: city || undefined,
+  };
+};
+
+const processNeighborhoodType = (address: any): LocationResult => {
+  const name = address.suburb || address.neighbourhood;
+  const city = getCityName(address);
+  const state = address.state || '';
+  const parts = [name];
+  if (city) parts.push(city);
+  if (state) parts.push(state);
+  return {
+    name,
+    type: 'neighborhood',
+    fullName: parts.join(', '),
+    state: address.state,
+    city: city || undefined,
+  };
+};
+
+const processCityType = (address: any): LocationResult => {
+  const name = getCityName(address);
+  const state = address.state || '';
+  return {
+    name,
+    type: 'city',
+    fullName: state ? `${name}, ${state}` : name,
+    state: address.state,
+    city: undefined,
+  };
+};
+
+const processLocationItem = (item: any): LocationResult => {
+  const address = item.address || {};
+  
+  if (address.road || address.street) {
+    return processAddressType(address);
+  }
+  
+  if (address.suburb || address.neighbourhood) {
+    return processNeighborhoodType(address);
+  }
+  
+  if (address.city || address.town || address.village || address.municipality) {
+    return processCityType(address);
+  }
+  
+  return {
+    name: item.display_name.split(',')[0],
+    type: 'address',
+    fullName: item.display_name,
+    state: address.state,
+    city: getCityName(address) || undefined,
+  };
+};
+
 export const locationService = {
   // Busca cidades brasileiras via IBGE
   async searchCities(query: string): Promise<LocationResult[]> {
@@ -48,54 +122,7 @@ export const locationService = {
       );
       const data = await res.json();
       return data
-        .map((item: any) => {
-          const address = item.address || {};
-          let type: 'city' | 'neighborhood' | 'address' = 'address';
-          let name = '';
-          let fullName = '';
-          if (address.road || address.street) {
-            type = 'address';
-            const road = address.road || address.street;
-            const suburb = address.suburb || address.neighbourhood || '';
-            const city = address.city || address.town || address.village || address.municipality || '';
-            const state = address.state || '';
-            name = road;
-            const parts = [road];
-            if (suburb) parts.push(suburb);
-            if (city) parts.push(city);
-            if (state) parts.push(state);
-            fullName = parts.join(', ');
-          } else if (address.suburb || address.neighbourhood) {
-            type = 'neighborhood';
-            name = address.suburb || address.neighbourhood;
-            const city = address.city || address.town || address.village || address.municipality || '';
-            const state = address.state || '';
-            const parts = [name];
-            if (city) parts.push(city);
-            if (state) parts.push(state);
-            fullName = parts.join(', ');
-          } else if (
-            address.city ||
-            address.town ||
-            address.village ||
-            address.municipality
-          ) {
-            type = 'city';
-            name = address.city || address.town || address.village || address.municipality;
-            const state = address.state || '';
-            fullName = state ? `${name}, ${state}` : name;
-          } else {
-            name = item.display_name.split(',')[0];
-            fullName = item.display_name;
-          }
-          return {
-            name,
-            type,
-            fullName,
-            state: address.state,
-            city: type !== 'city' ? address.city || address.town || address.village || address.municipality : undefined,
-          };
-        })
+        .map((item: any) => processLocationItem(item))
         .filter((item: { name: string; fullName: string; }) => item.name && item.fullName);
     } catch (error) {
       console.error('Erro ao buscar localizações:', error);

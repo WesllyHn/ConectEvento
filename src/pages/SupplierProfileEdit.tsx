@@ -54,7 +54,7 @@ export function SupplierProfileEdit() {
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-        .replace(/(-\d{2})\d+?$/, '$1');
+        .replace(/(-\d{2})\d+$/, '$1');
     }
 
     // CNPJ: 00.000.000/0000-00
@@ -63,7 +63,7 @@ export function SupplierProfileEdit() {
       .replace(/(\d{3})(\d)/, '$1.$2')
       .replace(/(\d{3})(\d)/, '$1/$2')
       .replace(/(\d{4})(\d)/, '$1-$2')
-      .replace(/(-\d{2})\d+?$/, '$1');
+      .replace(/(-\d{2})\d+$/, '$1');
   };
 
   const handleCnpjCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -408,7 +408,12 @@ export function SupplierProfileEdit() {
                   type="text"
                   value={newService}
                   onChange={(e) => setNewService(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addService())}
+                  onKeyUp={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addService();
+                    }
+                  }}
                   placeholder="Digite o nome do serviço"
                   className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 />
@@ -425,9 +430,9 @@ export function SupplierProfileEdit() {
 
             {profileData.services.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {profileData.services.map((service, index) => (
+                {profileData.services.map((service) => (
                   <div
-                    key={index}
+                    key={service}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full border border-blue-200"
                   >
                     <span className="text-sm font-semibold">{service}</span>

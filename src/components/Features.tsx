@@ -44,6 +44,38 @@ const steps = [
   }
 ];
 
+interface StatItemProps {
+  value: number | string;
+  label: string;
+  suffix?: string;
+  prefix?: string;
+  loadingStats?: boolean;
+}
+
+const StatItem = ({
+  value,
+  label,
+  suffix = '',
+  prefix = '',
+  loadingStats = false
+}: StatItemProps) => (
+  <div className="relative group">
+    <div className="absolute inset-0 bg-white/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    <div className="relative">
+      <div className="text-4xl md:text-5xl font-bold mb-2">
+        {loadingStats ? (
+          <div className="h-12 w-24 bg-white/20 rounded-lg animate-pulse mx-auto"></div>
+        ) : (
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
+            {prefix}{value}{suffix}
+          </span>
+        )}
+      </div>
+      <div className="text-blue-200 font-medium">{label}</div>
+    </div>
+  </div>
+);
+
 export function Features() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
@@ -111,34 +143,6 @@ export function Features() {
     }
   };
 
-  const StatItem = ({
-    value,
-    label,
-    suffix = '',
-    prefix = ''
-  }: {
-    value: number | string;
-    label: string;
-    suffix?: string;
-    prefix?: string;
-  }) => (
-    <div className="relative group">
-      <div className="absolute inset-0 bg-white/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div className="relative">
-        <div className="text-4xl md:text-5xl font-bold mb-2">
-          {loadingStats ? (
-            <div className="h-12 w-24 bg-white/20 rounded-lg animate-pulse mx-auto"></div>
-          ) : (
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
-              {prefix}{value}{suffix}
-            </span>
-          )}
-        </div>
-        <div className="text-blue-200 font-medium">{label}</div>
-      </div>
-    </div>
-  );
-
   return (
     <>
 
@@ -155,7 +159,7 @@ export function Features() {
 
           <div className="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto px-4">
             {steps.map((step, index) => (
-              <div key={index} className="relative">
+              <div key={step.number} className="relative">
                 {index < steps.length - 1 && (
                   <div className="hidden md:block absolute top-8 left-[calc(50%+2rem)] w-[calc(100%-4rem)] h-0.5">
                     <div className="w-full h-full bg-gradient-to-r from-blue-500 to-blue-800 opacity-30"></div>
@@ -196,9 +200,9 @@ export function Features() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
+            {features.map((feature) => (
               <div
-                key={index}
+                key={feature.title}
                 className="bg-white p-6 rounded-xl hover:shadow-lg transition-all duration-300 border border-gray-100 group"
               >
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
@@ -231,21 +235,25 @@ export function Features() {
               value={stats.suppliers}
               label="Fornecedores Cadastrados"
               suffix="+"
+              loadingStats={loadingStats}
             />
             <StatItem
               value={stats.events}
               label="Eventos Realizados"
               suffix="+"
+              loadingStats={loadingStats}
             />
             <StatItem
               value={stats.averageRating || '0.0'}
               label="Avaliação Média"
               suffix="/5"
+              loadingStats={loadingStats}
             />
             <StatItem
               value={stats.satisfaction}
               label="Taxa de Satisfação"
               suffix="%"
+              loadingStats={loadingStats}
             />
           </div>
         </div>

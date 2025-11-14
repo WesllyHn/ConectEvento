@@ -116,6 +116,14 @@ export function SupplierReviews() {
     withResponse: supplierReviews.filter(r => r.response).length
   };
 
+  const getStarCountKey = (stars: number): keyof typeof stats => {
+    if (stars === 1) return 'oneStar';
+    if (stars === 2) return 'twoStars';
+    if (stars === 3) return 'threeStars';
+    if (stars === 4) return 'fourStars';
+    return 'fiveStars';
+  };
+
   const handleResponseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedReview || !responseText.trim()) return;
@@ -164,158 +172,168 @@ export function SupplierReviews() {
           <p className="text-gray-600 mt-2 text-lg">Veja o que seus clientes estão dizendo sobre seus serviços</p>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
-            {error}
-          </div>
-        ) : (
-          <>
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <ColoredStatCard
-                title="Total de Avaliações"
-                value={stats.total}
-                icon={MessageSquare}
-                gradient="bg-gradient-to-br from-blue-500 to-blue-700"
-                iconText="blue-600"
-              />
-              <ColoredStatCard
-                title="Avaliação Média"
-                value={Number.isFinite(stats?.averageRating) ? stats.averageRating.toFixed(1) : '—'}
-                icon={Award}
-                gradient="bg-gradient-to-br from-amber-500 to-amber-700"
-                iconText="amber-600"
-              />
-              <ColoredStatCard
-                title="5 Estrelas"
-                value={stats.fiveStars}
-                icon={TrendingUp}
-                gradient="bg-gradient-to-br from-emerald-500 to-emerald-700"
-                iconText="emerald-600"
-              />
-              <ColoredStatCard
-                title="Com Resposta"
-                value={stats.withResponse}
-                icon={Reply}
-                gradient="bg-gradient-to-br from-purple-500 to-purple-700"
-                iconText="purple-600"
-              />
-            </div>
+        {(() => {
+          if (loading) {
+            return (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+              </div>
+            );
+          }
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Rating Distribution */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <BarChart3 className="w-6 h-6 text-blue-600" />
-                  <span>Distribuição de Notas</span>
-                </h2>
+          if (error) {
+            return (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
+                {error}
+              </div>
+            );
+          }
 
-                <div className="space-y-4">
-                  {[5, 4, 3, 2, 1].map((stars) => {
-                    const count = stats[`${stars === 1 ? 'oneStar' : stars === 2 ? 'twoStars' : stars === 3 ? 'threeStars' : stars === 4 ? 'fourStars' : 'fiveStars'}` as keyof typeof stats] as number;
-                    const percentage = stats.total > 0 ? (count / stats.total) * 100 : 0;
-
-                    return (
-                      <div key={stars} className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 w-16">
-                          <span className="text-sm font-bold text-gray-700">{stars}</span>
-                          <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                        </div>
-                        <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
-                          <div
-                            className="bg-gradient-to-r from-amber-400 to-amber-500 h-3 rounded-full transition-all duration-500"
-                            style={{ width: `${percentage}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-sm font-semibold text-gray-700 w-12 text-right">{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+          return (
+            <>
+              {/* Stats Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <ColoredStatCard
+                  title="Total de Avaliações"
+                  value={stats.total}
+                  icon={MessageSquare}
+                  gradient="bg-gradient-to-br from-blue-500 to-blue-700"
+                  iconText="blue-600"
+                />
+                <ColoredStatCard
+                  title="Avaliação Média"
+                  value={Number.isFinite(stats?.averageRating) ? stats.averageRating.toFixed(1) : '—'}
+                  icon={Award}
+                  gradient="bg-gradient-to-br from-amber-500 to-amber-700"
+                  iconText="amber-600"
+                />
+                <ColoredStatCard
+                  title="5 Estrelas"
+                  value={stats.fiveStars}
+                  icon={TrendingUp}
+                  gradient="bg-gradient-to-br from-emerald-500 to-emerald-700"
+                  iconText="emerald-600"
+                />
+                <ColoredStatCard
+                  title="Com Resposta"
+                  value={stats.withResponse}
+                  icon={Reply}
+                  gradient="bg-gradient-to-br from-purple-500 to-purple-700"
+                  iconText="purple-600"
+                />
               </div>
 
-              {/* Reviews List */}
-              <div className="lg:col-span-2">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Rating Distribution */}
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Avaliações Recebidas</h2>
+                  <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <BarChart3 className="w-6 h-6 text-blue-600" />
+                    <span>Distribuição de Notas</span>
+                  </h2>
 
-                  {supplierReviews.length > 0 ? (
-                    <div className="space-y-6 max-h-[700px] overflow-y-auto pr-2">
-                      {supplierReviews.map((review) => (
-                        <div key={review.id} className="border-b-2 border-gray-100 pb-6 last:border-b-0">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center flex-shrink-0">
-                                <User className="w-6 h-6 text-white" />
-                              </div>
-                              <div>
-                                <p className="font-bold text-gray-900">{review.organizerName}</p>
-                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                  <Calendar className="w-3.5 h-3.5" />
-                                  <span>{new Date(review.createdAt).toLocaleDateString('pt-BR')}</span>
-                                  <span>•</span>
-                                  <span>{review.eventType}</span>
+                  <div className="space-y-4">
+                    {[5, 4, 3, 2, 1].map((stars) => {
+                      const count = stats[getStarCountKey(stars)];
+                      const percentage = stats.total > 0 ? (count / stats.total) * 100 : 0;
+
+                      return (
+                        <div key={stars} className="flex items-center gap-3">
+                          <div className="flex items-center gap-1.5 w-16">
+                            <span className="text-sm font-bold text-gray-700">{stars}</span>
+                            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                          </div>
+                          <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div
+                              className="bg-gradient-to-r from-amber-400 to-amber-500 h-3 rounded-full transition-all duration-500"
+                              style={{ width: `${percentage}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-700 w-12 text-right">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Reviews List */}
+                <div className="lg:col-span-2">
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6">Avaliações Recebidas</h2>
+
+                    {supplierReviews.length > 0 ? (
+                      <div className="space-y-6 max-h-[700px] overflow-y-auto pr-2">
+                        {supplierReviews.map((review) => (
+                          <div key={review.id} className="border-b-2 border-gray-100 pb-6 last:border-b-0">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center flex-shrink-0">
+                                  <User className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                  <p className="font-bold text-gray-900">{review.organizerName}</p>
+                                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                                    <Calendar className="w-3.5 h-3.5" />
+                                    <span>{new Date(review.createdAt).toLocaleDateString('pt-BR')}</span>
+                                    <span>•</span>
+                                    <span>{review.eventType}</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
 
-                            <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`w-4 h-4 ${
-                                    i < review.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          </div>
-
-                          <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg mb-4">
-                            {review.comment}
-                          </p>
-
-                          {review.response ? (
-                            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-xl border border-blue-200">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Reply className="w-4 h-4 text-blue-600" />
-                                <span className="text-sm font-bold text-blue-900">Sua resposta</span>
-                                <span className="text-xs text-blue-600">
-                                  {new Date(review.responseDate!).toLocaleDateString('pt-BR')}
-                                </span>
+                              <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
+                                {[1, 2, 3, 4, 5].map((starNumber) => (
+                                  <Star
+                                    key={`${review.id}-star-${starNumber}`}
+                                    className={`w-4 h-4 ${
+                                      starNumber <= review.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'
+                                    }`}
+                                  />
+                                ))}
                               </div>
-                              <p className="text-blue-800 leading-relaxed">{review.response}</p>
                             </div>
-                          ) : (
-                            <button
-                              onClick={() => openResponseModal(review.id)}
-                              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold transition-colors px-4 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg"
-                            >
-                              <Reply className="w-4 h-4" />
-                              <span>Responder avaliação</span>
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Sem avaliações</h3>
-                      <p className="text-gray-600">
-                        Quando você receber avaliações dos clientes, elas aparecerão aqui
-                      </p>
-                    </div>
-                  )}
+
+                            <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg mb-4">
+                              {review.comment}
+                            </p>
+
+                            {review.response ? (
+                              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-xl border border-blue-200">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Reply className="w-4 h-4 text-blue-600" />
+                                  <span className="text-sm font-bold text-blue-900">Sua resposta</span>
+                                  <span className="text-xs text-blue-600">
+                                    {new Date(review.responseDate!).toLocaleDateString('pt-BR')}
+                                  </span>
+                                </div>
+                                <p className="text-blue-800 leading-relaxed">{review.response}</p>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => openResponseModal(review.id)}
+                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold transition-colors px-4 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg"
+                              >
+                                <Reply className="w-4 h-4" />
+                                <span>Responder avaliação</span>
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">Sem avaliações</h3>
+                        <p className="text-gray-600">
+                          Quando você receber avaliações dos clientes, elas aparecerão aqui
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          );
+        })()}
       </div>
 
       {/* Response Modal */}
@@ -337,13 +355,13 @@ export function SupplierReviews() {
               <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 rounded-xl mb-6 border border-gray-200">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
-                    {[...Array(5)].map((_, i) => {
+                    {[1, 2, 3, 4, 5].map((starNumber) => {
                       const review = supplierReviews.find(r => r.id === selectedReview);
                       return (
                         <Star
-                          key={i}
+                          key={`${selectedReview}-modal-star-${starNumber}`}
                           className={`w-4 h-4 ${
-                            i < (review?.rating || 0) ? 'text-amber-500 fill-amber-500' : 'text-gray-300'
+                            starNumber <= (review?.rating || 0) ? 'text-amber-500 fill-amber-500' : 'text-gray-300'
                           }`}
                         />
                       );

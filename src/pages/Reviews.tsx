@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Card,
   Button,
   Row,
   Col,
@@ -14,7 +13,7 @@ import {
   message,
   Avatar
 } from 'antd';
-import { ArrowLeft, Award, Calendar, CheckCheck, MapPin, MessageSquare, Star } from 'lucide-react';
+import { ArrowLeft, Award, Calendar, CheckCheck, MapPin, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { reviewService, CreateReviewData, UpdateReviewResponse } from '../services/reviewService';

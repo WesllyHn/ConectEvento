@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Search, MessageSquare, TrendingUp, Plus, Clock, CheckCircle, ChevronDown, ChevronUp, MoreVertical, Star, MapPin, X, Building2, Home } from 'lucide-react';
-import { Modal, Form, Input, Select, Button, Row, Col, Empty, message, Collapse, Dropdown, Radio, InputNumber, DatePicker } from 'antd';
+import { Calendar, Search, MessageSquare, TrendingUp, Plus, Clock, CheckCircle, ChevronDown, ChevronUp, MoreVertical, Star } from 'lucide-react';
+import { Modal, Form, Input, Select, Button, Row, Col, Empty, message, Collapse, Dropdown, Radio, DatePicker } from 'antd';
 import { useAuth } from '../context/AuthContext';
 import { eventTypes, budgetRanges } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,12 @@ dayjs.extend(isSameOrAfter);
 
 const { TextArea } = Input;
 const { Panel } = Collapse;
+
+const EventsExpandIcon = ({ isActive }: { isActive?: boolean }) =>
+  isActive ? <ChevronUp className="w-5 h-5 text-blue-600" /> : <ChevronDown className="w-5 h-5 text-gray-400" />;
+
+const QuotesExpandIcon = ({ isActive }: { isActive?: boolean }) =>
+  isActive ? <ChevronUp className="w-5 h-5 text-purple-600" /> : <ChevronDown className="w-5 h-5 text-gray-400" />;
 
 interface LocationResult {
   name: string;
@@ -64,8 +70,6 @@ export function Dashboard() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [userEvents, setUserEvents] = useState<Event[]>([]);
   const [userQuotes, setUserQuotes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingQuotes, setLoadingQuotes] = useState(true);
   const [form] = Form.useForm();
 
   const [locationQuery, setLocationQuery] = useState('');
@@ -85,14 +89,11 @@ export function Dashboard() {
     if (!user?.id) return;
 
     try {
-      setLoading(true);
       const events = await eventService.getEventsByOrganizer(user.id);
       setUserEvents(events);
     } catch (error) {
       console.error('Error loading events:', error);
       message.error('Erro ao carregar eventos');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -100,14 +101,11 @@ export function Dashboard() {
     if (!user?.id) return;
 
     try {
-      setLoadingQuotes(true);
       const quotes = await quoteService.getBudgetsByUserId(user.id);
       setUserQuotes(quotes);
     } catch (error) {
       console.error('Error loading quotes:', error);
       message.error('Erro ao carregar orçamentos');
-    } finally {
-      setLoadingQuotes(false);
     }
   };
 
@@ -128,6 +126,35 @@ export function Dashboard() {
     setter(formatted);
   };
 
+  const calculateFinalBudget = (values: any): string | null => {
+    if (budgetType === 'custom') {
+      if (!customBudgetMin || customBudgetMin.trim() === '') {
+        message.error('Digite o valor mínimo do orçamento');
+        return null;
+      }
+      if (!customBudgetMax || customBudgetMax.trim() === '') {
+        message.error('Digite o valor máximo do orçamento');
+        return null;
+      }
+
+      const minValue = parseFloat(customBudgetMin.replace(/\./g, '').replace(',', '.'));
+      const maxValue = parseFloat(customBudgetMax.replace(/\./g, '').replace(',', '.'));
+
+      if (minValue >= maxValue) {
+        message.error('O valor máximo deve ser maior que o mínimo');
+        return null;
+      }
+
+      return `R$ ${customBudgetMin} - R$ ${customBudgetMax}`;
+    } else {
+      if (!values.budget) {
+        message.error('Selecione uma faixa de orçamento');
+        return null;
+      }
+      return values.budget;
+    }
+  };
+
   const handleCreateEvent = async (values: any) => {
     if (!user?.id) {
       message.error('Usuário não autenticado');
@@ -139,32 +166,9 @@ export function Dashboard() {
       return;
     }
 
-    let finalBudget = '';
-    if (budgetType === 'custom') {
-      if (!customBudgetMin || customBudgetMin.trim() === '') {
-        message.error('Digite o valor mínimo do orçamento');
-        return;
-      }
-      if (!customBudgetMax || customBudgetMax.trim() === '') {
-        message.error('Digite o valor máximo do orçamento');
-        return;
-      }
-
-      const minValue = parseFloat(customBudgetMin.replace(/\./g, '').replace(',', '.'));
-      const maxValue = parseFloat(customBudgetMax.replace(/\./g, '').replace(',', '.'));
-
-      if (minValue >= maxValue) {
-        message.error('O valor máximo deve ser maior que o mínimo');
-        return;
-      }
-
-      finalBudget = `R$ ${customBudgetMin} - R$ ${customBudgetMax}`;
-    } else {
-      if (!values.budget) {
-        message.error('Selecione uma faixa de orçamento');
-        return;
-      }
-      finalBudget = values.budget;
+    const finalBudget = calculateFinalBudget(values);
+    if (!finalBudget) {
+      return;
     }
 
     try {
@@ -391,9 +395,7 @@ export function Dashboard() {
             <Collapse
               defaultActiveKey={['events']}
               className="mb-6 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
-              expandIcon={({ isActive }) =>
-                isActive ? <ChevronUp className="w-5 h-5 text-blue-600" /> : <ChevronDown className="w-5 h-5 text-gray-400" />
-              }
+              expandIcon={EventsExpandIcon}
               bordered={false}
             >
               <Panel
@@ -459,9 +461,7 @@ export function Dashboard() {
             <Collapse
               defaultActiveKey={['quotes']}
               className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
-              expandIcon={({ isActive }) =>
-                isActive ? <ChevronUp className="w-5 h-5 text-purple-600" /> : <ChevronDown className="w-5 h-5 text-gray-400" />
-              }
+              expandIcon={QuotesExpandIcon}
               bordered={false}
             >
               <Panel
@@ -626,7 +626,7 @@ export function Dashboard() {
                     <Col span={11}>
                       <Input
                         value={customBudgetMin}
-                        onChange={(e) => handleCurrencyInput(e.target.value, setCustomBudgetMin)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleCurrencyInput(e.target.value, setCustomBudgetMin)}
                         placeholder="0,00"
                         size="large"
                         prefix={<span className="text-gray-500 font-medium">R$</span>}
@@ -639,7 +639,7 @@ export function Dashboard() {
                     <Col span={11}>
                       <Input
                         value={customBudgetMax}
-                        onChange={(e) => handleCurrencyInput(e.target.value, setCustomBudgetMax)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleCurrencyInput(e.target.value, setCustomBudgetMax)}
                         placeholder="0,00"
                         size="large"
                         prefix={<span className="text-gray-500 font-medium">R$</span>}

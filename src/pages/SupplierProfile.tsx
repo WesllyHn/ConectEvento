@@ -14,8 +14,6 @@ import {
 } from 'lucide-react';
 import {
   Button,
-  Card,
-  Tag,
   Modal,
   Form,
   Input,
@@ -148,9 +146,9 @@ export function SupplierProfile() {
             <Button 
               type="primary" 
               size="large"
-              onClick={() => navigate(user?.type === 'supplier' ? '/supplier-dashboard' : '/suppliers')}
+              onClick={() => navigate(getBackButtonPath())}
             >
-              {user?.type === "supplier" ? 'Voltar para dashboard' : 'Voltar para fornecedores'}
+              {getBackButtonText()}
             </Button>
           </Empty>
         </div>
@@ -216,18 +214,97 @@ export function SupplierProfile() {
 
   const priceConfig = getPriceRangeConfig(supplier.priceRange);
 
+  const getBackButtonText = (): string => {
+    return user?.type === 'supplier' ? 'Voltar para dashboard' : 'Voltar para fornecedores';
+  };
+
+  const getBackButtonPath = (): string => {
+    return user?.type === 'supplier' ? '/supplier-dashboard' : '/suppliers';
+  };
+
+  const renderReviewsContent = () => {
+    if (loadingReviews) {
+      return (
+        <div className="text-center py-8">
+          <Spin />
+        </div>
+      );
+    }
+
+    if (reviews.length > 0) {
+      return (
+        <div className="space-y-4">
+          {reviews.map((review: any) => (
+            <div key={review.id} className="border-b border-gray-100 pb-4 last:border-b-0">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">
+                      {review.organizer?.name || 'Organizador'}
+                    </p>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Calendar className="w-3 h-3" />
+                      <span>{new Date(review.createdAt).toLocaleDateString('pt-BR')}</span>
+                      {review.event && (
+                        <>
+                          <span>•</span>
+                          <span>{eventTypeMap[review.event.type] || review.event.type}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
+                  {[1, 2, 3, 4, 5].map((starNumber) => (
+                    <Star
+                      key={`${review.id}-star-${starNumber}`}
+                      className={`w-4 h-4 ${
+                        starNumber <= review.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-lg">{review.comment}</p>
+
+              {review.response && (
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-lg mt-3 border border-blue-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MessageSquare className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-bold text-blue-900">Resposta do fornecedor</span>
+                    <span className="text-xs text-blue-600">
+                      {new Date(review.responseDate).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                  <p className="text-blue-800 leading-relaxed">{review.response}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return <Empty description="Nenhuma avaliação disponível" />;
+  };
+
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Botão Voltar */}
           <button
-            onClick={() => navigate(user?.type === 'supplier' ? '/supplier-dashboard' : '/suppliers')}
+            onClick={() => navigate(getBackButtonPath())}
             className="flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-6 transition-colors group"
           >
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="font-medium">
-              {user?.type === "supplier" ? 'Voltar para dashboard' : 'Voltar para fornecedores'}
+              {getBackButtonText()}
             </span>
           </button>
 
@@ -327,8 +404,8 @@ export function SupplierProfile() {
                     Serviços Oferecidos
                   </h2>
                   <Row gutter={[12, 12]}>
-                    {services.map((service: string, index: number) => (
-                      <Col key={index} xs={24} sm={12} md={8}>
+                    {services.map((service: string) => (
+                      <Col key={service} xs={24} sm={12} md={8}>
                         <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100 hover:bg-blue-100 transition-colors">
                           <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
                           <span className="font-medium text-blue-900">{service}</span>
@@ -345,7 +422,7 @@ export function SupplierProfile() {
                   <h2 className="text-xl font-bold text-gray-900 mb-4">Portfólio</h2>
                   <Row gutter={[12, 12]}>
                     {portfolioImages.map((image: string, index: number) => (
-                      <Col key={index} xs={12} sm={8}>
+                      <Col key={image} xs={12} sm={8}>
                         <div
                           className="relative group cursor-pointer rounded-xl overflow-hidden"
                           onClick={() => openImageModal(index)}
@@ -373,68 +450,7 @@ export function SupplierProfile() {
                   <MessageSquare className="w-6 h-6 text-blue-600" />
                   Avaliações dos Clientes
                 </h2>
-                {loadingReviews ? (
-                  <div className="text-center py-8">
-                    <Spin />
-                  </div>
-                ) : reviews.length > 0 ? (
-                  <div className="space-y-4">
-                    {reviews.map((review: any) => (
-                      <div key={review.id} className="border-b border-gray-100 pb-4 last:border-b-0">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                              <p className="font-bold text-gray-900">
-                                {review.organizer?.name || 'Organizador'}
-                              </p>
-                              <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <Calendar className="w-3 h-3" />
-                                <span>{new Date(review.createdAt).toLocaleDateString('pt-BR')}</span>
-                                {review.event && (
-                                  <>
-                                    <span>•</span>
-                                    <span>{eventTypeMap[review.event.type] || review.event.type}</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`w-4 h-4 ${
-                                  i < review.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-
-                        <p className="text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-lg">{review.comment}</p>
-
-                        {review.response && (
-                          <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-lg mt-3 border border-blue-200">
-                            <div className="flex items-center gap-2 mb-2">
-                              <MessageSquare className="w-4 h-4 text-blue-600" />
-                              <span className="text-sm font-bold text-blue-900">Resposta do fornecedor</span>
-                              <span className="text-xs text-blue-600">
-                                {new Date(review.responseDate).toLocaleDateString('pt-BR')}
-                              </span>
-                            </div>
-                            <p className="text-blue-800 leading-relaxed">{review.response}</p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <Empty description="Nenhuma avaliação disponível" />
-                )}
+                {renderReviewsContent()}
               </div>
             </Col>
 

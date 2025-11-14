@@ -18,6 +18,122 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { quoteService } from '../services/quoteService';
 
+interface QuoteCardProps {
+  quote: any;
+  onSelectQuote: (id: string) => void;
+  onEditResponse: (id: string, response: string, price: string) => void;
+  getStatusBadgeClass: (status: string) => string;
+  getStatusText: (status: string) => string;
+}
+
+const QuoteCard = ({
+  quote,
+  onSelectQuote,
+  onEditResponse,
+  getStatusBadgeClass,
+  getStatusText
+}: QuoteCardProps) => {
+  return (
+    <div
+      className="border-2 border-gray-100 rounded-xl p-6 hover:border-blue-200 hover:shadow-md transition-all duration-200"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center">
+            <User className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="font-bold text-gray-900">
+              {quote.organizer?.name || 'Cliente'}
+            </p>
+            <p className="text-sm text-gray-600">
+              {quote.organizer?.email || ''}
+            </p>
+          </div>
+        </div>
+        <span
+          className={`px-3 py-1.5 text-xs font-bold rounded-full ${getStatusBadgeClass(quote.status)}`}
+        >
+          {getStatusText(quote.status)}
+        </span>
+      </div>
+
+      {quote.event && (
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-xl mb-4 border border-blue-200">
+          <p className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            {quote.event.title}
+          </p>
+          <div className="space-y-2 text-sm text-blue-700">
+            <p className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5" />
+              Data: {new Date(quote.event.date).toLocaleDateString('pt-BR')}
+            </p>
+            <p className="flex items-center gap-2">
+              <MapPin className="w-3.5 h-3.5" />
+              Local: {quote.event.location}
+            </p>
+            {quote.event.guestCount && (
+              <p className="flex items-center gap-2">
+                <Users className="w-3.5 h-3.5" />
+                Convidados: {quote.event.guestCount}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="mb-4">
+        <p className="text-gray-900 font-bold mb-2">Solicitação:</p>
+        <p className="text-gray-700 bg-gray-50 p-3 rounded-lg leading-relaxed">
+          {quote.message}
+        </p>
+      </div>
+
+      <p className="text-xs text-gray-500 mb-4">
+        Recebido em {new Date(quote.createdAt).toLocaleDateString('pt-BR')} às{' '}
+        {new Date(quote.createdAt).toLocaleTimeString('pt-BR')}
+      </p>
+
+      {quote.response && (
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4 rounded-xl mb-4 border border-emerald-200">
+          <p className="text-sm text-emerald-800 font-bold mb-2">Sua resposta:</p>
+          <p className="text-emerald-700 leading-relaxed">{quote.response}</p>
+          {quote.price && (
+            <p className="text-emerald-700 font-bold mt-3 flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              Valor: R$ {quote.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+          )}
+        </div>
+      )}
+
+      {quote.status === 'PENDING' && (
+        <div className="flex gap-3">
+          <button
+            onClick={() => onSelectQuote(quote.id)}
+            className="flex-1 bg-blue-600 text-white py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-colors font-semibold"
+          >
+            Responder
+          </button>
+          <button className="px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold">
+            Recusar
+          </button>
+        </div>
+      )}
+
+      {quote.status === 'RESPONDED' && (
+        <button
+          onClick={() => onEditResponse(quote.id, quote.response || '', quote.price?.toString() || '')}
+          className="w-full py-2.5 px-4 border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 transition-colors font-semibold"
+        >
+          Editar Resposta
+        </button>
+      )}
+    </div>
+  );
+};
+
 // Componente de Stat Card colorido
 const ColoredStatCard = ({
   title,
@@ -90,6 +206,39 @@ export function SupplierDashboard() {
     accepted: quotes.filter(q => q.status === 'ACCEPTED').length
   };
 
+  const getStatusBadgeClass = (status: string): string => {
+    if (status === 'PENDING') return 'bg-amber-100 text-amber-700';
+    if (status === 'RESPONDED') return 'bg-emerald-100 text-emerald-700';
+    if (status === 'ACCEPTED') return 'bg-blue-100 text-blue-700';
+    return 'bg-gray-100 text-gray-700';
+  };
+
+  const getStatusText = (status: string): string => {
+    if (status === 'PENDING') return 'Pendente';
+    if (status === 'RESPONDED') return 'Respondido';
+    if (status === 'ACCEPTED') return 'Aceito';
+    return 'Rejeitado';
+  };
+
+  const getEmptyMessage = (tab: string): { title: string; description: string } => {
+    if (tab === 'PENDING') {
+      return {
+        title: 'Nenhuma solicitação pendente',
+        description: 'Novas solicitações aparecerão aqui'
+      };
+    }
+    if (tab === 'RESPONDED') {
+      return {
+        title: 'Nenhuma solicitação respondida',
+        description: 'Suas respostas aparecerão aqui'
+      };
+    }
+    return {
+      title: 'Nenhuma solicitação recebida',
+      description: 'Suas respostas aparecerão aqui'
+    };
+  };
+
   const handleRespond = async (quoteId: string) => {
     if (!responseMessage || !responsePrice) {
       alert('Preencha todos os campos');
@@ -137,6 +286,51 @@ export function SupplierDashboard() {
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(e.target.value);
     setResponsePrice(formatted);
+  };
+
+  const renderQuotesContent = () => {
+    if (loading) {
+      return (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Carregando...</p>
+        </div>
+      );
+    }
+
+    if (filteredQuotes.length > 0) {
+      return (
+        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+          {filteredQuotes.map((quote) => (
+            <QuoteCard
+              key={quote.id}
+              quote={quote}
+              onSelectQuote={setSelectedQuote}
+              onEditResponse={(id, response, price) => {
+                setSelectedQuote(id);
+                setResponseMessage(response);
+                setResponsePrice(price);
+              }}
+              getStatusBadgeClass={getStatusBadgeClass}
+              getStatusText={getStatusText}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    const emptyMsg = getEmptyMessage(activeTab);
+    return (
+      <div className="text-center py-12">
+        <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          {emptyMsg.title}
+        </h3>
+        <p className="text-gray-600">
+          {emptyMsg.description}
+        </p>
+      </div>
+    );
   };
 
   return (
@@ -273,150 +467,7 @@ export function SupplierDashboard() {
               </div>
 
               {/* Quote Requests */}
-              {loading ? (
-                <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                  <p className="mt-4 text-gray-600">Carregando...</p>
-                </div>
-              ) : filteredQuotes.length > 0 ? (
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                  {filteredQuotes.map((quote) => (
-                    <div
-                      key={quote.id}
-                      className="border-2 border-gray-100 rounded-xl p-6 hover:border-blue-200 hover:shadow-md transition-all duration-200"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-gray-900">
-                              {quote.organizer?.name || 'Cliente'}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {quote.organizer?.email || ''}
-                            </p>
-                          </div>
-                        </div>
-                        <span
-                          className={`px-3 py-1.5 text-xs font-bold rounded-full ${
-                            quote.status === 'PENDING'
-                              ? 'bg-amber-100 text-amber-700'
-                              : quote.status === 'RESPONDED'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : quote.status === 'ACCEPTED'
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-gray-100 text-gray-700'
-                          }`}
-                        >
-                          {quote.status === 'PENDING'
-                            ? 'Pendente'
-                            : quote.status === 'RESPONDED'
-                            ? 'Respondido'
-                            : quote.status === 'ACCEPTED'
-                            ? 'Aceito'
-                            : 'Rejeitado'}
-                        </span>
-                      </div>
-
-                      {/* Event Info */}
-                      {quote.event && (
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-xl mb-4 border border-blue-200">
-                          <p className="font-bold text-blue-900 mb-3 flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            {quote.event.title}
-                          </p>
-                          <div className="space-y-2 text-sm text-blue-700">
-                            <p className="flex items-center gap-2">
-                              <Calendar className="w-3.5 h-3.5" />
-                              Data: {new Date(quote.event.date).toLocaleDateString('pt-BR')}
-                            </p>
-                            <p className="flex items-center gap-2">
-                              <MapPin className="w-3.5 h-3.5" />
-                              Local: {quote.event.location}
-                            </p>
-                            {quote.event.guestCount && (
-                              <p className="flex items-center gap-2">
-                                <Users className="w-3.5 h-3.5" />
-                                Convidados: {quote.event.guestCount}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="mb-4">
-                        <p className="text-gray-900 font-bold mb-2">Solicitação:</p>
-                        <p className="text-gray-700 bg-gray-50 p-3 rounded-lg leading-relaxed">
-                          {quote.message}
-                        </p>
-                      </div>
-
-                      <p className="text-xs text-gray-500 mb-4">
-                        Recebido em {new Date(quote.createdAt).toLocaleDateString('pt-BR')} às{' '}
-                        {new Date(quote.createdAt).toLocaleTimeString('pt-BR')}
-                      </p>
-
-                      {quote.response && (
-                        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4 rounded-xl mb-4 border border-emerald-200">
-                          <p className="text-sm text-emerald-800 font-bold mb-2">Sua resposta:</p>
-                          <p className="text-emerald-700 leading-relaxed">{quote.response}</p>
-                          {quote.price && (
-                            <p className="text-emerald-700 font-bold mt-3 flex items-center gap-2">
-                              <DollarSign className="w-4 h-4" />
-                              Valor: R$ {quote.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      {quote.status === 'PENDING' && (
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => setSelectedQuote(quote.id)}
-                            className="flex-1 bg-blue-600 text-white py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-colors font-semibold"
-                          >
-                            Responder
-                          </button>
-                          <button className="px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold">
-                            Recusar
-                          </button>
-                        </div>
-                      )}
-
-                      {quote.status === 'RESPONDED' && (
-                        <button
-                          onClick={() => {
-                            setSelectedQuote(quote.id);
-                            setResponseMessage(quote.response || '');
-                            setResponsePrice(quote.price?.toString() || '');
-                          }}
-                          className="w-full py-2.5 px-4 border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 transition-colors font-semibold"
-                        >
-                          Editar Resposta
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {activeTab === 'PENDING'
-                      ? 'Nenhuma solicitação pendente'
-                      : activeTab === 'RESPONDED'
-                      ? 'Nenhuma solicitação respondida'
-                      : 'Nenhuma solicitação recebida'}
-                  </h3>
-                  <p className="text-gray-600">
-                    {activeTab === 'PENDING'
-                      ? 'Novas solicitações aparecerão aqui'
-                      : 'Suas respostas aparecerão aqui'}
-                  </p>
-                </div>
-              )}
+              {renderQuotesContent()}
             </div>
           </div>
         </div>

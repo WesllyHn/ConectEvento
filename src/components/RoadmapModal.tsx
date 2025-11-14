@@ -165,6 +165,85 @@ export function RoadmapModal({ open, eventId, eventTitle, onCancel }: RoadmapMod
     completed: items.filter(i => i.status === 'COMPLETED').length
   };
 
+  const renderItemsContent = () => {
+    if (loading) {
+      return (
+        <div className="text-center py-12">
+          <Spin size="large" />
+        </div>
+      );
+    }
+
+    if (items.length > 0) {
+      return (
+        <div className="space-y-3 max-h-96 overflow-y-auto">
+          {items.map((item) => (
+            <Card
+              key={item.id}
+              size="small"
+              className="hover:shadow-md transition-shadow"
+            >
+              <div className="space-y-2">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      size="small"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEdit(item)}
+                    />
+                    <Popconfirm
+                      title="Tem certeza que deseja remover?"
+                      onConfirm={() => handleDelete(item.id)}
+                      okText="Sim"
+                      cancelText="Não"
+                    >
+                      <Button
+                        size="small"
+                        danger
+                        icon={<DeleteOutlined />}
+                      />
+                    </Popconfirm>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {getStatusTag(item.status)}
+                    <span className="text-sm font-medium text-green-600">
+                      R$ {parseFloat(item.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <Select
+                    size="small"
+                    value={item.status}
+                    onChange={(value) => handleStatusChange(item.id, value)}
+                    style={{ width: 140 }}
+                    options={statuses}
+                  />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <Empty
+        image={Empty.PRESENTED_IMAGE_SIMPLE}
+        description="Nenhum item adicionado ainda"
+      >
+        <Button type="primary" onClick={handleAdd}>
+          Adicionar Primeiro Item
+        </Button>
+      </Empty>
+    );
+  };
+
   return (
     <>
       <Modal
@@ -212,74 +291,7 @@ export function RoadmapModal({ open, eventId, eventTitle, onCancel }: RoadmapMod
             Adicionar Item
           </Button>
 
-          {loading ? (
-            <div className="text-center py-12">
-              <Spin size="large" />
-            </div>
-          ) : items.length > 0 ? (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {items.map((item) => (
-                <Card
-                  key={item.id}
-                  size="small"
-                  className="hover:shadow-md transition-shadow"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">{item.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                      </div>
-                      <div className="flex gap-2 ml-4">
-                        <Button
-                          size="small"
-                          icon={<EditOutlined />}
-                          onClick={() => handleEdit(item)}
-                        />
-                        <Popconfirm
-                          title="Tem certeza que deseja remover?"
-                          onConfirm={() => handleDelete(item.id)}
-                          okText="Sim"
-                          cancelText="Não"
-                        >
-                          <Button
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined />}
-                          />
-                        </Popconfirm>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {getStatusTag(item.status)}
-                        <span className="text-sm font-medium text-green-600">
-                          R$ {parseFloat(item.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                      <Select
-                        size="small"
-                        value={item.status}
-                        onChange={(value) => handleStatusChange(item.id, value)}
-                        style={{ width: 140 }}
-                        options={statuses}
-                      />
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="Nenhum item adicionado ainda"
-            >
-              <Button type="primary" onClick={handleAdd}>
-                Adicionar Primeiro Item
-              </Button>
-            </Empty>
-          )}
+          {renderItemsContent()}
         </div>
       </Modal>
 

@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Card,
-  Tag,
   Button,
   Empty,
   Spin,
@@ -16,7 +14,6 @@ import {
   CheckCircle,
   XCircle,
   MessageSquare,
-  DollarSign,
   Calendar,
   MapPin,
   User,

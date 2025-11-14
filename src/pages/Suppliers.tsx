@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Star, MapPin, Award, TrendingUp, ArrowLeft } from 'lucide-react';
-import { Row, Col, Card, Tag, Empty, Spin, message } from 'antd';
+import { Star, MapPin, ArrowLeft } from 'lucide-react';
+import { Row, Col, Empty, Spin, message } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/userService';
@@ -293,9 +293,9 @@ export function Suppliers() {
 
                           {/* Serviços */}
                           <div className="flex flex-wrap gap-2 pt-2">
-                            {(supplier.services || []).slice(0, 3).map((service: any, index: number) => (
+                            {(supplier.services || []).slice(0, 3).map((service: any) => (
                               <span 
-                                key={index}
+                                key={`${supplier.id}-${service.service}`}
                                 className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold"
                               >
                                 {service.service}

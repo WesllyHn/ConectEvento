@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Building, MapPin, Calendar, ArrowRight, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Building, MapPin, ArrowRight, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Register() {

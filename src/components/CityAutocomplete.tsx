@@ -102,6 +102,48 @@ export function CityAutocomplete({
     setCitySuggestions([]);
   };
 
+  const renderSuggestionsContent = () => {
+    if (isSearchingCity) {
+      return (
+        <div className="px-4 py-3 text-sm text-gray-500 flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          Buscando cidades...
+        </div>
+      );
+    }
+
+    if (citySuggestions.length > 0) {
+      return (
+        <>
+          {citySuggestions.map((city) => (
+            <button
+              key={`${city.name}-${city.state}`}
+              type="button"
+              onClick={() => selectCity(city)}
+              className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors flex items-center gap-2 border-b border-gray-100 last:border-b-0"
+            >
+              <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0" />
+              <div>
+                <div className="text-sm font-medium text-gray-900">
+                  {city.name}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {city.state}
+                </div>
+              </div>
+            </button>
+          ))}
+        </>
+      );
+    }
+
+    return (
+      <div className="px-4 py-3 text-sm text-gray-500">
+        Nenhuma cidade encontrada
+      </div>
+    );
+  };
+
   return (
     <div className={className}>
       {label && (
@@ -134,35 +176,7 @@ export function CityAutocomplete({
         {/* Dropdown de sugestões */}
         {showSuggestions && cityQuery.length >= 2 && (
           <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-            {isSearchingCity ? (
-              <div className="px-4 py-3 text-sm text-gray-500 flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                Buscando cidades...
-              </div>
-            ) : citySuggestions.length > 0 ? (
-              citySuggestions.map((city, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => selectCity(city)}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors flex items-center gap-2 border-b border-gray-100 last:border-b-0"
-                >
-                  <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {city.name}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {city.state}
-                    </div>
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="px-4 py-3 text-sm text-gray-500">
-                Nenhuma cidade encontrada
-              </div>
-            )}
+            {renderSuggestionsContent()}
           </div>
         )}
       </div>

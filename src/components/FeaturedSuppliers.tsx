@@ -5,11 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/userService';
 import { uploadService } from '../services/uploadService';
 
+type AvatarType = string | Uint8Array | null;
+
 interface Supplier {
   id: string;
   name: string;
   companyName: string | null;
-  avatar: string | Uint8Array | null;
+  avatar: AvatarType;
   description: string | null;
   location: string | null;
   rating: number;
@@ -25,6 +27,279 @@ interface Supplier {
   portfolioImages?: string[];
   availability: boolean
 }
+
+const SkeletonCard = () => (
+  <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-lg">
+    <div className="h-48 bg-gray-200 animate-pulse" />
+    <div className="p-6 space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
+        <div className="flex-1 space-y-2">
+          <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4" />
+          <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 bg-gray-200 rounded animate-pulse" />
+        <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+      </div>
+      <div className="flex gap-2">
+        <div className="h-6 w-20 bg-gray-200 rounded-lg animate-pulse" />
+        <div className="h-6 w-24 bg-gray-200 rounded-lg animate-pulse" />
+      </div>
+    </div>
+  </div>
+);
+
+const getPriceRangeConfig = (priceRange: string) => {
+  const configs: Record<string, { label: string; gradient: string }> = {
+    BUDGET: {
+      label: 'Econômico',
+      gradient: 'from-emerald-500 to-emerald-600'
+    },
+    MID: {
+      label: 'Intermediário',
+      gradient: 'from-amber-500 to-amber-600'
+    },
+    PREMIUM: {
+      label: 'Premium',
+      gradient: 'from-purple-500 to-purple-600'
+    }
+  };
+  return configs[priceRange] || configs.BUDGET;
+};
+
+interface AvatarDisplayProps {
+  portfolioImages?: string[];
+  avatar: AvatarType;
+  supplierName: string;
+  firstLetter: string;
+  getAvatarUrl: (avatar: AvatarType) => string | null;
+}
+
+const AvatarDisplay = ({ portfolioImages, avatar, supplierName, firstLetter, getAvatarUrl }: AvatarDisplayProps) => {
+  if (portfolioImages && portfolioImages.length > 0) {
+    return (
+      <img
+        src={portfolioImages[0]}
+        alt={supplierName}
+        className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-100 shadow-md"
+        onError={(e) => {
+          const target = e.currentTarget;
+          target.style.display = 'none';
+          const placeholder = document.createElement('div');
+          placeholder.className = 'w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center ring-2 ring-gray-100 shadow-md flex-shrink-0';
+          placeholder.innerHTML = `<span class="text-lg font-bold text-white">${firstLetter}</span>`;
+          target.parentElement!.insertBefore(placeholder, target);
+        }}
+      />
+    );
+  }
+
+  const avatarUrl = getAvatarUrl(avatar);
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={supplierName}
+        className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-100 shadow-md"
+        onError={(e) => {
+          const target = e.currentTarget;
+          target.style.display = 'none';
+          const placeholder = document.createElement('div');
+          placeholder.className = 'w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center ring-2 ring-gray-100 shadow-md flex-shrink-0';
+          placeholder.innerHTML = `<span class="text-lg font-bold text-white">${firstLetter}</span>`;
+          target.parentElement!.insertBefore(placeholder, target);
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center ring-2 ring-gray-100 shadow-md flex-shrink-0">
+      <span className="text-lg font-bold text-white">{firstLetter}</span>
+    </div>
+  );
+};
+
+interface SupplierCardProps {
+  supplier: Supplier;
+  currentImageIndex: Record<string, number>;
+  onSupplierClick: (supplierId: string) => void;
+  onPrevImage: (supplierId: string, portfolioLength: number, e: React.MouseEvent) => void;
+  onNextImage: (supplierId: string, portfolioLength: number, e: React.MouseEvent) => void;
+  onImageIndexChange: (supplierId: string, index: number) => void;
+  getAvatarUrl: (avatar: AvatarType) => string | null;
+}
+
+const SupplierCard = ({
+  supplier,
+  currentImageIndex,
+  onSupplierClick,
+  onPrevImage,
+  onNextImage,
+  onImageIndexChange,
+  getAvatarUrl
+}: SupplierCardProps) => {
+  const priceConfig = getPriceRangeConfig(supplier.priceRange);
+  const supplierName = supplier.companyName || supplier.name;
+  const firstLetter = supplierName.charAt(0).toUpperCase();
+  const currentIndex = currentImageIndex[supplier.id] || 0;
+
+  return (
+    <div
+      className="group cursor-pointer"
+      onClick={() => onSupplierClick(supplier.id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSupplierClick(supplier.id);
+        }
+      }}
+      aria-label={`Ver perfil de ${supplierName}`}
+    >
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+        <div className="relative h-48 bg-gradient-to-br from-blue-500 to-blue-700">
+          {supplier.portfolioImages && supplier.portfolioImages.length > 0 ? (
+            <>
+              <img
+                src={supplier.portfolioImages[currentIndex]}
+                alt={`Portfolio ${currentIndex + 1} de ${supplierName}`}
+                className="w-full h-full object-cover transition-opacity duration-300"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  const placeholder = document.createElement('div');
+                  placeholder.className = 'w-full h-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center';
+                  placeholder.innerHTML = `<span class="text-7xl font-bold text-white">${firstLetter}</span>`;
+                  target.parentElement!.appendChild(placeholder);
+                }}
+              />
+
+              {supplier.portfolioImages.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => onPrevImage(supplier.id, supplier.portfolioImages!.length, e)}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
+                    aria-label="Imagem anterior"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-800" />
+                  </button>
+                  <button
+                    onClick={(e) => onNextImage(supplier.id, supplier.portfolioImages!.length, e)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
+                    aria-label="Próxima imagem"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-800" />
+                  </button>
+
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {supplier.portfolioImages.map((imageUrl, index) => (
+                      <button
+                        key={`${supplier.id}-image-${imageUrl}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onImageIndexChange(supplier.id, index);
+                        }}
+                        className={`w-2 h-2 rounded-full transition-all ${index === currentIndex
+                            ? 'bg-white w-6'
+                            : 'bg-white/60 hover:bg-white/80'
+                          }`}
+                        aria-label={`Ir para imagem ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <span className="text-7xl font-bold text-white">{firstLetter}</span>
+            </div>
+          )}
+
+          <div className="absolute top-3 right-3">
+            <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white shadow-lg">
+              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <span className="font-bold text-gray-900">
+                {supplier.rating ? supplier.rating.toFixed(1) : '0.0'}
+              </span>
+            </div>
+          </div>
+
+          <div className="absolute bottom-3 right-3">
+            <div className={`px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg bg-gradient-to-r ${priceConfig.gradient}`}>
+              {priceConfig.label}
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 flex-1 flex flex-col">
+          <div className="flex-1 space-y-3">
+            <div className="flex items-center gap-3">
+              <AvatarDisplay
+                portfolioImages={supplier.portfolioImages}
+                avatar={supplier.avatar}
+                supplierName={supplierName}
+                firstLetter={firstLetter}
+                getAvatarUrl={getAvatarUrl}
+              />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                  {supplierName}
+                </h3>
+                {supplier.location && (
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-blue-600" />
+                    <span className="truncate">{supplier.location}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {supplier.description && (
+              <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+                {supplier.description}
+              </p>
+            )}
+
+            {supplier.services && supplier.services.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {supplier.services.slice(0, 2).map((serviceObj) => (
+                  <span
+                    key={`${supplier.id}-service-${serviceObj.service}`}
+                    className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full"
+                  >
+                    {serviceObj.service}
+                  </span>
+                ))}
+                {supplier.services.length > 2 && (
+                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+                    +{supplier.services.length - 2} mais
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">
+                {supplier.reviewCount || 0} {supplier.reviewCount === 1 ? 'avaliação' : 'avaliações'}
+              </span>
+              <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
+                <span>Ver perfil</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export function FeaturedSuppliers() {
   const navigate = useNavigate();
@@ -104,7 +379,7 @@ export function FeaturedSuppliers() {
     navigate(`/supplier/${supplierId}`);
   }, [isAuthenticated, navigate]);
 
-  const getAvatarUrl = useCallback((avatar: string | Uint8Array | null) => {
+  const getAvatarUrl = useCallback((avatar: AvatarType) => {
     if (!avatar) return null;
 
     try {
@@ -147,46 +422,12 @@ export function FeaturedSuppliers() {
     }));
   }, []);
 
-  const getPriceRangeConfig = (priceRange: string) => {
-    const configs: Record<string, { label: string; gradient: string }> = {
-      BUDGET: {
-        label: 'Econômico',
-        gradient: 'from-emerald-500 to-emerald-600'
-      },
-      MID: {
-        label: 'Intermediário',
-        gradient: 'from-amber-500 to-amber-600'
-      },
-      PREMIUM: {
-        label: 'Premium',
-        gradient: 'from-purple-500 to-purple-600'
-      }
-    };
-    return configs[priceRange] || configs.BUDGET;
-  };
-
-  const SkeletonCard = () => (
-    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-lg">
-      <div className="h-48 bg-gray-200 animate-pulse" />
-      <div className="p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
-          <div className="flex-1 space-y-2">
-            <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4" />
-            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <div className="h-4 bg-gray-200 rounded animate-pulse" />
-          <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
-        </div>
-        <div className="flex gap-2">
-          <div className="h-6 w-20 bg-gray-200 rounded-lg animate-pulse" />
-          <div className="h-6 w-24 bg-gray-200 rounded-lg animate-pulse" />
-        </div>
-      </div>
-    </div>
-  );
+  const handleImageIndexChange = useCallback((supplierId: string, index: number) => {
+    setCurrentImageIndex(prev => ({
+      ...prev,
+      [supplierId]: index
+    }));
+  }, []);
 
   if (loading) {
     return (
@@ -276,197 +517,18 @@ export function FeaturedSuppliers() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {suppliers.map((supplier) => {
-            const priceConfig = getPriceRangeConfig(supplier.priceRange);
-            const supplierName = supplier.companyName || supplier.name;
-            const firstLetter = supplierName.charAt(0).toUpperCase();
-
-            return (
-              <div
-                key={supplier.id}
-                className="group cursor-pointer"
-                onClick={() => handleSupplierClick(supplier.id)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleSupplierClick(supplier.id);
-                  }
-                }}
-                aria-label={`Ver perfil de ${supplierName}`}
-              >
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-
-                  <div className="relative h-48 bg-gradient-to-br from-blue-500 to-blue-700">
-                    {supplier.portfolioImages && supplier.portfolioImages.length > 0 ? (
-                      <>
-                        <img
-                          src={supplier.portfolioImages[currentImageIndex[supplier.id] || 0]}
-                          alt={`Portfolio ${(currentImageIndex[supplier.id] || 0) + 1} de ${supplierName}`}
-                          className="w-full h-full object-cover transition-opacity duration-300"
-                          onError={(e) => {
-                            const target = e.currentTarget;
-                            target.style.display = 'none';
-                            const placeholder = document.createElement('div');
-                            placeholder.className = 'w-full h-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center';
-                            placeholder.innerHTML = `<span class="text-7xl font-bold text-white">${firstLetter}</span>`;
-                            target.parentElement!.appendChild(placeholder);
-                          }}
-                        />
-
-                        {supplier.portfolioImages.length > 1 && (
-                          <>
-                            <button
-                              onClick={(e) => handlePrevImage(supplier.id, supplier.portfolioImages!.length, e)}
-                              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
-                              aria-label="Imagem anterior"
-                            >
-                              <ChevronLeft className="w-5 h-5 text-gray-800" />
-                            </button>
-                            <button
-                              onClick={(e) => handleNextImage(supplier.id, supplier.portfolioImages!.length, e)}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
-                              aria-label="Próxima imagem"
-                            >
-                              <ChevronRight className="w-5 h-5 text-gray-800" />
-                            </button>
-
-                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                              {supplier.portfolioImages.map((_, index) => (
-                                <button
-                                  key={index}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCurrentImageIndex(prev => ({
-                                      ...prev,
-                                      [supplier.id]: index
-                                    }));
-                                  }}
-                                  className={`w-2 h-2 rounded-full transition-all ${index === (currentImageIndex[supplier.id] || 0)
-                                      ? 'bg-white w-6'
-                                      : 'bg-white/60 hover:bg-white/80'
-                                    }`}
-                                  aria-label={`Ir para imagem ${index + 1}`}
-                                />
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <span className="text-7xl font-bold text-white">{firstLetter}</span>
-                      </div>
-                    )}
-
-                    <div className="absolute top-3 right-3">
-                      <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white shadow-lg">
-                        <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                        <span className="font-bold text-gray-900">
-                          {supplier.rating ? supplier.rating.toFixed(1) : '0.0'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-3 right-3">
-                      <div className={`px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg bg-gradient-to-r ${priceConfig.gradient}`}>
-                        {priceConfig.label}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-6 flex-1 flex flex-col">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-3">
-                        {supplier.portfolioImages && supplier.portfolioImages.length > 0 ? (
-                          <img
-                            src={supplier.portfolioImages[0]}
-                            alt={supplierName}
-                            className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-100 shadow-md"
-                            onError={(e) => {
-                              const target = e.currentTarget;
-                              target.style.display = 'none';
-                              const placeholder = document.createElement('div');
-                              placeholder.className = 'w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center ring-2 ring-gray-100 shadow-md flex-shrink-0';
-                              placeholder.innerHTML = `<span class="text-lg font-bold text-white">${firstLetter}</span>`;
-                              target.parentElement!.insertBefore(placeholder, target);
-                            }}
-                          />
-                        ) : getAvatarUrl(supplier.avatar) ? (
-                          <img
-                            src={getAvatarUrl(supplier.avatar)!}
-                            alt={supplierName}
-                            className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-100 shadow-md"
-                            onError={(e) => {
-                              const target = e.currentTarget;
-                              target.style.display = 'none';
-                              const placeholder = document.createElement('div');
-                              placeholder.className = 'w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center ring-2 ring-gray-100 shadow-md flex-shrink-0';
-                              placeholder.innerHTML = `<span class="text-lg font-bold text-white">${firstLetter}</span>`;
-                              target.parentElement!.insertBefore(placeholder, target);
-                            }}
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center ring-2 ring-gray-100 shadow-md flex-shrink-0">
-                            <span className="text-lg font-bold text-white">{firstLetter}</span>
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
-                            {supplierName}
-                          </h3>
-                          {supplier.location && (
-                            <div className="flex items-center gap-1 text-sm text-gray-500">
-                              <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-blue-600" />
-                              <span className="truncate">{supplier.location}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {supplier.description && (
-                        <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
-                          {supplier.description}
-                        </p>
-                      )}
-
-                      {supplier.services && supplier.services.length > 0 && (
-                        <div className="flex flex-wrap gap-2 pt-2">
-                          {supplier.services.slice(0, 2).map((serviceObj, index) => (
-                            <span
-                              key={index}
-                              className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full"
-                            >
-                              {serviceObj.service}
-                            </span>
-                          ))}
-                          {supplier.services.length > 2 && (
-                            <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
-                              +{supplier.services.length - 2} mais
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">
-                          {supplier.reviewCount || 0} {supplier.reviewCount === 1 ? 'avaliação' : 'avaliações'}
-                        </span>
-                        <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
-                          <span>Ver perfil</span>
-                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {suppliers.map((supplier) => (
+            <SupplierCard
+              key={supplier.id}
+              supplier={supplier}
+              currentImageIndex={currentImageIndex}
+              onSupplierClick={handleSupplierClick}
+              onPrevImage={handlePrevImage}
+              onNextImage={handleNextImage}
+              onImageIndexChange={handleImageIndexChange}
+              getAvatarUrl={getAvatarUrl}
+            />
+          ))}
         </div>
       </div>
     </section>

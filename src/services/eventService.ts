@@ -1,15 +1,18 @@
 import { apiRequest } from './api';
 
+type EventType = 'WEDDING' | 'BIRTHDAY' | 'CORPORATE' | 'GRADUATION' | 'OTHER';
+type EventStatus = 'PLANNING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+
 export interface Event {
   id: string;
   title: string;
-  type: 'WEDDING' | 'BIRTHDAY' | 'CORPORATE' | 'GRADUATION' | 'OTHER';
+  type: EventType;
   date: string;
   location: string;
   budget: string;
   description?: string;
   guestCount?: number;
-  status: 'PLANNING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  status: EventStatus;
   organizerId: string;
   createdAt: string;
   updatedAt: string;
@@ -17,7 +20,7 @@ export interface Event {
 
 export interface CreateEventData {
   title: string;
-  type: 'WEDDING' | 'BIRTHDAY' | 'CORPORATE' | 'GRADUATION' | 'OTHER';
+  type: EventType;
   date: string;
   location: string;
   budget: string;
@@ -28,23 +31,23 @@ export interface CreateEventData {
 
 export interface UpdateEventData {
   title?: string;
-  type?: 'WEDDING' | 'BIRTHDAY' | 'CORPORATE' | 'GRADUATION' | 'OTHER';
+  type?: EventType;
   date?: string;
   location?: string;
   budget?: string;
   description?: string;
   guestCount?: number;
-  status?: 'PLANNING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  status?: EventStatus;
 }
 
 class EventService {
   async getEventById(eventId: string): Promise<Event> {
-    const response = await apiRequest(`/events/${eventId}`) as any;
+    const response = await apiRequest(`/events/${eventId}`);
     return response.data;
   }
 
   async getEventsByOrganizerId(organizerId: string): Promise<Event[]> {
-    const response = await apiRequest(`/events/organizer/${organizerId}`) as any;
+    const response = await apiRequest(`/events/organizer/${organizerId}`);
     return response.data;
   }
 
@@ -52,7 +55,7 @@ class EventService {
     const response = await apiRequest('/events', {
       method: 'POST',
       body: JSON.stringify(eventData),
-    }) as any;
+    });
     return response.data;
   }
 
@@ -60,15 +63,15 @@ class EventService {
     const response = await apiRequest(`/events/${eventId}`, {
       method: 'PUT',
       body: JSON.stringify(eventData),
-    }) as any;
+    });
     return response.data;
   }
 
-  async updateEventStatus(eventId: string, status: 'PLANNING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'): Promise<Event> {
+  async updateEventStatus(eventId: string, status: EventStatus): Promise<Event> {
     const response = await apiRequest(`/events/${eventId}`, {
       method: 'PUT',
       body: JSON.stringify({ status }),
-    }) as any;
+    });
     return response.data;
   }
 

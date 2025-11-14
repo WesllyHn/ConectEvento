@@ -15,7 +15,7 @@ export interface UpdateQuoteData {
 
 class QuoteService {
   async getBudgetsByUserId(userId: string): Promise<any[]> {
-    const response = await apiRequest(`/budgets?id=${userId}`) as any;
+    const response = await apiRequest(`/budgets?id=${userId}`);
     return response.data;
   }
 
@@ -23,7 +23,7 @@ class QuoteService {
     const response = await apiRequest('/budgets', {
       method: 'POST',
       body: JSON.stringify(quoteData),
-    }) as any;
+    });
     return response.data;
   }
 
@@ -31,7 +31,7 @@ class QuoteService {
     const response = await apiRequest(`/budgets/${budgetId}`, {
       method: 'PUT',
       body: JSON.stringify(updateData),
-    }) as any;
+    });
     return response.data;
   }
 }

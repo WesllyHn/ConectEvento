@@ -46,8 +46,8 @@ export function SupplierCard({ supplier, onClick }: SupplierCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {supplier.services.slice(0, 3).map((service, index) => (
-            <Tag key={index} color="blue">{service}</Tag>
+          {supplier.services.slice(0, 3).map((service) => (
+            <Tag key={service} color="blue">{service}</Tag>
           ))}
           {supplier.services.length > 3 && (
             <Tag>+{supplier.services.length - 3}</Tag>
