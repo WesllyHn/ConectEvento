@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Search, MessageSquare, TrendingUp, Plus, Clock, CheckCircle, ChevronDown, ChevronUp, MoreVertical, Star } from 'lucide-react';
 import { Modal, Form, Input, Select, Button, Row, Col, Empty, message, Collapse, Dropdown, Radio, DatePicker } from 'antd';
 import { useAuth } from '../context/AuthContext';
@@ -23,13 +23,6 @@ const EventsExpandIcon = ({ isActive }: { isActive?: boolean }) =>
 const QuotesExpandIcon = ({ isActive }: { isActive?: boolean }) =>
   isActive ? <ChevronUp className="w-5 h-5 text-purple-600" /> : <ChevronDown className="w-5 h-5 text-gray-400" />;
 
-interface LocationResult {
-  name: string;
-  type: 'city' | 'neighborhood' | 'address';
-  fullName: string;
-  state?: string;
-  city?: string;
-}
 
 // Componente de Stat Card customizado com cores
 const ColoredStatCard = ({
@@ -78,14 +71,7 @@ export function Dashboard() {
   const [customBudgetMin, setCustomBudgetMin] = useState('');
   const [customBudgetMax, setCustomBudgetMax] = useState('');
 
-  useEffect(() => {
-    if (user?.id) {
-      loadUserEvents();
-      loadUserQuotes();
-    }
-  }, [user?.id]);
-
-  const loadUserEvents = async () => {
+  const loadUserEvents = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -95,9 +81,9 @@ export function Dashboard() {
       console.error('Error loading events:', error);
       message.error('Erro ao carregar eventos');
     }
-  };
+  }, [user?.id]);
 
-  const loadUserQuotes = async () => {
+  const loadUserQuotes = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -107,7 +93,14 @@ export function Dashboard() {
       console.error('Error loading quotes:', error);
       message.error('Erro ao carregar orçamentos');
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadUserEvents();
+      loadUserQuotes();
+    }
+  }, [user?.id, loadUserEvents, loadUserQuotes]);
 
   const formatCurrency = (value: string): string => {
     const numbers = value.replace(/\D/g, '');

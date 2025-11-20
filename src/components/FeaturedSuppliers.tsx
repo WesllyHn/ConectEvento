@@ -310,11 +310,6 @@ export function FeaturedSuppliers() {
   const [retryCount, setRetryCount] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState<Record<string, number>>({});
 
-  console.log("suppliers", suppliers)
-  useEffect(() => {
-    loadFeaturedSuppliers();
-  }, []);
-
   const loadFeaturedSuppliers = useCallback(async (currentRetry = 0) => {
     try {
       setLoading(true);
@@ -370,6 +365,10 @@ export function FeaturedSuppliers() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    loadFeaturedSuppliers();
+  }, [loadFeaturedSuppliers]);
 
   const handleSupplierClick = useCallback((supplierId: string) => {
     if (!isAuthenticated) {

@@ -206,7 +206,7 @@ export function Reviews() {
     );
   };
 
-  const getSupplierAvatar = (supplierId: string, fallbackAvatar: string | null, supplierName: string) => {
+  const getSupplierAvatar = (supplierId: string, fallbackAvatar: string | null) => {
     const portfolioAvatar = supplierAvatars[supplierId];
     if (portfolioAvatar) return portfolioAvatar;
     if (fallbackAvatar) return fallbackAvatar;
@@ -295,7 +295,6 @@ export function Reviews() {
                   const avatarUrl = getSupplierAvatar(
                     supplier.fornecedorId,
                     supplier.fornecedorAvatar,
-                    supplier.fornecedorNome
                   );
 
                   return (
@@ -401,7 +400,6 @@ export function Reviews() {
                 : getSupplierAvatar(
                   review.supplierId,
                   review.supplier?.avatar,
-                  review.supplier?.companyName || review.supplier?.name
                 );
 
               return (
