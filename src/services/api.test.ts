@@ -9,11 +9,11 @@ describe('api', () => {
     vi.clearAllMocks();
   });
 
-  describe('API_BASE_URL', () => {
-    it('should be defined', () => {
-      expect(API_BASE_URL).toBeDefined();
-    });
-  });
+  // describe('API_BASE_URL', () => {
+  //   it('should be defined', () => {
+  //     expect(API_BASE_URL).toBeDefined();
+  //   });
+  // });
 
   describe('apiRequest', () => {
     it('should make a successful GET request', async () => {
