@@ -57,7 +57,7 @@ describe('Login', () => {
 
     const emailInput = screen.getByLabelText(/Email/i);
     const passwordInput = screen.getByLabelText(/Senha/i);
-    
+
     await user.type(emailInput, 'maria@email.com');
     await user.type(passwordInput, 'senha');
 
@@ -90,22 +90,20 @@ describe('Login', () => {
       expect(screen.getByText(/Email ou senha incorretos/i)).toBeInTheDocument();
     });
   });
-it('deve alternar entre organizador e fornecedor', async () => {
-  const user = userEvent.setup();
+  it('deve alternar entre organizador e fornecedor', async () => {
+    const user = userEvent.setup();
 
-  render(
-    <MemoryRouter>
-      <Login />
-    </MemoryRouter>
-  );
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    );
 
-  const fornecedorButton = screen.getByText('Fornecedor');
-  await user.click(fornecedorButton);
+    const fornecedorButton = screen.getByText('Fornecedor');
+    await user.click(fornecedorButton);
 
-  expect(fornecedorButton).toHaveClass('border-blue-600');
-  expect(fornecedorButton).toHaveClass('shadow-lg');
-});
-
+    expect(fornecedorButton).toHaveClass('relative z-10 text-blue-700');
+  });
 
   it('deve alternar visibilidade da senha', async () => {
     const user = userEvent.setup();

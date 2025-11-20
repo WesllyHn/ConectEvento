@@ -100,17 +100,17 @@ describe('SupplierDashboard', () => {
       renderComponent();
       await waitFor(() => {
         expect(screen.getByText('Dashboard do Fornecedor')).toBeInTheDocument();
-        expect(screen.getByText(/Bem-vindo de volta,.*João Silva.*/)).toBeInTheDocument();
+        expect(screen.getByText('João Silva')).toBeInTheDocument();
       });
     });
 
     it('should render all stats cards', async () => {
       renderComponent();
       await waitFor(() => {
-        expect(screen.getByText(/Total de Solicitações/)).toBeInTheDocument();
-        expect(screen.getByText(/Pendentes/)).toBeInTheDocument();
-        expect(screen.getByText(/Respondidas/)).toBeInTheDocument();
-        expect(screen.getByText(/Aceitas/)).toBeInTheDocument();
+        expect(screen.getByText('Total de Solicitações')).toBeInTheDocument();
+        expect(screen.getByText('Pendentes')).toBeInTheDocument();
+        expect(screen.getByText('Respondidas')).toBeInTheDocument();
+        expect(screen.getByText('Aceitas')).toBeInTheDocument();
       });
     });
 
@@ -209,10 +209,27 @@ describe('SupplierDashboard', () => {
 
   describe('Quote Display', () => {
     it('should display quote status badge correctly', async () => {
+      const user = userEvent.setup();
       renderComponent();
+
+      // Verifica Pendente na aba inicial
       await waitFor(() => {
         expect(screen.getByText('Pendente')).toBeInTheDocument();
+      });
+
+      // Muda para a aba Respondidas
+      const respondedTab = screen.getByText(/Respondidas \(1\)/);
+      await user.click(respondedTab);
+
+      await waitFor(() => {
         expect(screen.getByText('Respondido')).toBeInTheDocument();
+      });
+
+      // Muda para a aba Todas
+      const allTab = screen.getByText(/Todas \(3\)/);
+      await user.click(allTab);
+
+      await waitFor(() => {
         expect(screen.getByText('Aceito')).toBeInTheDocument();
       });
     });
@@ -276,7 +293,7 @@ describe('SupplierDashboard', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Orçamento enviado conforme solicitado')).toBeInTheDocument();
-        expect(screen.getByText(/Valor: R\$ 5.000,00/)).toBeInTheDocument();
+        expect(screen.getByText(/Valor: R\$ 5\.000,00/)).toBeInTheDocument();
       });
     });
   });
@@ -341,12 +358,17 @@ describe('SupplierDashboard', () => {
       });
 
       await waitFor(() => {
-        const closeButton = screen.getByLabelText('Fechar');
-        expect(closeButton).toBeInTheDocument();
+        expect(screen.getByText('Responder Solicitação')).toBeInTheDocument();
       });
 
-      const closeButton = screen.getByLabelText('Fechar');
-      await user.click(closeButton);
+      // Procura pelo botão X através da classe CSS
+      const modal = screen.getByText('Responder Solicitação').closest('.fixed');
+      const xButton = modal?.querySelector('button.hover\\:bg-gray-100');
+
+      expect(xButton).toBeTruthy();
+      if (xButton) {
+        await user.click(xButton as HTMLElement);
+      }
 
       await waitFor(() => {
         expect(screen.queryByText('Responder Solicitação')).not.toBeInTheDocument();
@@ -370,7 +392,8 @@ describe('SupplierDashboard', () => {
       await user.clear(priceInput);
       await user.type(priceInput, '5000');
 
-      expect(priceInput.value).toBe('R$ 50,00'); // pode ser R$ 50,00 ou R$ 50,00 dependendo do formato, ajuste se necessário
+      // O formato aceita R$ 50,00 devido à lógica de formatação de moeda
+      expect(priceInput.value).toMatch(/R\$\s*50,00/);
     });
 
     it('should allow typing in message textarea', async () => {
@@ -449,7 +472,9 @@ describe('SupplierDashboard', () => {
       const submitButton = screen.getByText('Enviar Resposta');
       await user.click(submitButton);
 
-      expect(screen.getByText('Enviando...')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Enviando...')).toBeInTheDocument();
+      });
 
       // Resolver a promise para cleanup
       if (resolveUpdate) resolveUpdate({});
@@ -483,7 +508,7 @@ describe('SupplierDashboard', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(quoteService.getBudgetsByUserId).toHaveBeenCalled();
+        expect(quoteService.getBudgetsByUserId).toHaveBeenCalledTimes(2);
       }, { timeout: 3000 });
     });
   });
@@ -507,14 +532,14 @@ describe('SupplierDashboard', () => {
         expect(screen.getByText('Nenhuma solicitação pendente')).toBeInTheDocument();
       });
 
-      const respondedTab = screen.getByText(/Respondidas/);
+      const respondedTab = screen.getByText(/Respondidas \(0\)/);
       await user.click(respondedTab);
       await waitFor(() => {
         expect(screen.getByText('Nenhuma solicitação respondida')).toBeInTheDocument();
         expect(screen.getByText('Suas respostas aparecerão aqui')).toBeInTheDocument();
       });
 
-      const allTab = screen.getByText(/Todas/);
+      const allTab = screen.getByText(/Todas \(0\)/);
       await user.click(allTab);
       await waitFor(() => {
         expect(screen.getByText('Nenhuma solicitação recebida')).toBeInTheDocument();

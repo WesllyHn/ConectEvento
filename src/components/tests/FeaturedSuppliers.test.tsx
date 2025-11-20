@@ -245,9 +245,17 @@ describe('FeaturedSuppliers', () => {
     
     renderComponent();
 
+    // Aguarda até 4 tentativas de retry (cada uma com delays exponenciais)
+    // Tentativa 1: imediato
+    // Tentativa 2: após 1s
+    // Tentativa 3: após 2s
+    // Tentativa 4: após 4s
+    // Total: aproximadamente 7-8 segundos
     await waitFor(() => {
-      expect(screen.getByText('Ops! Algo deu errado')).toBeInTheDocument();
-    }, { timeout: 5000 });
+      expect(screen.getByText((content, element) => {
+        return element?.textContent === 'Ops! Algo deu errado';
+      })).toBeInTheDocument();
+    }, { timeout: 10000 });
   });
 
   it('should show retry button on error', async () => {
@@ -256,8 +264,10 @@ describe('FeaturedSuppliers', () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('Tentar novamente')).toBeInTheDocument();
-    }, { timeout: 5000 });
+      expect(screen.getByText((content, element) => {
+        return element?.textContent === 'Tentar novamente';
+      })).toBeInTheDocument();
+    }, { timeout: 10000 });
   });
 
   it('should render empty state when no suppliers available', async () => {
