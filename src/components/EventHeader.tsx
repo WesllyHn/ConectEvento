@@ -1,8 +1,5 @@
-import { Card, Button, Typography, Space, Progress } from 'antd';
-import { ArrowLeftOutlined, CalendarOutlined, EnvironmentOutlined, DollarOutlined } from '@ant-design/icons';
+import { ArrowLeft, Calendar, MapPin, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-const { Title, Text } = Typography;
 
 interface Event {
   id: string;
@@ -24,51 +21,70 @@ export function EventHeader({ event, completionPercentage }: EventHeaderProps) {
 
   return (
     <>
-      <Button
-        type="text"
-        icon={<ArrowLeftOutlined />}
+      <button
         onClick={() => navigate('/dashboard')}
-        className="mb-4"
+        className="flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-6 transition-colors group"
       >
-        Voltar ao Dashboard
-      </Button>
+        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" aria-label="back-arrow" />
+        <span className="font-medium">Voltar ao Dashboard</span>
+      </button>
 
-      <Card>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <Title level={2} style={{ margin: 0 }}>
-              {event.title}
-            </Title>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">{event.title}</h1>
 
-            <Space size="large" className="mt-4">
-              <Space>
-                <CalendarOutlined />
-                <Text>{new Date(event.date).toLocaleDateString('pt-BR')}</Text>
-              </Space>
+            <div className="flex flex-wrap gap-6">
+              <div className="flex items-center gap-2 text-gray-700">
+                <Calendar className="w-5 h-5 text-blue-600" aria-label='calendar' />
+                <span className="font-medium">{new Date(event.date).toLocaleDateString('pt-BR')}</span>
+              </div>
 
-              <Space>
-                <EnvironmentOutlined />
-                <Text>{event.location}</Text>
-              </Space>
+              <div className="flex items-center gap-2 text-gray-700">
+                <MapPin className="w-5 h-5 text-blue-600" aria-label='location' />
+                <span className="font-medium">{event.location}</span>
+              </div>
 
-              <Space>
-                <DollarOutlined />
-                <Text>{event.budget}</Text>
-              </Space>
-            </Space>
+              <div className="flex items-center gap-2 text-gray-700">
+                <DollarSign className="w-5 h-5 text-blue-600" aria-label='budget'/>
+                <span className="font-medium">{event.budget}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="text-right" style={{ minWidth: 120 }}>
-            <Progress
-              type="circle"
-              percent={completionPercentage}
-              format={(percent) => `${percent}%`}
-              size={80}
-            />
-            <div className="text-sm text-gray-600 mt-2">Contratado</div>
+
+          <div className="text-center">
+            <div className="relative w-24 h-24">
+              <svg className="transform -rotate-90 w-24 h-24">
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="40"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="transparent"
+                  className="text-gray-200"
+                />
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="40"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="transparent"
+                  strokeDasharray={`${2 * Math.PI * 40}`}
+                  strokeDashoffset={`${2 * Math.PI * 40 * (1 - completionPercentage / 100)}`}
+                  className="text-blue-600 transition-all duration-500"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xl font-bold text-gray-900">{completionPercentage}%</span>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mt-2 font-medium">Contratado</p>
           </div>
         </div>
-      </Card>
+      </div>
     </>
   );
 }

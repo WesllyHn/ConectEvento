@@ -29,6 +29,31 @@ interface QuotesSectionProps {
   onQuoteUpdate?: () => void; // Callback para recarregar os dados
 }
 
+const getStatusText = (status: Quote['status']): string => {
+  const statusMap: Record<Quote['status'], string> = {
+    'PENDING': 'Pendente',
+    'RESPONDED': 'Respondido',
+    'ACCEPTED': 'Aceito',
+    'REJECTED': 'Rejeitado'
+  };
+  return statusMap[status];
+};
+
+const getStatusColor = (status: Quote['status']): 'warning' | 'success' | 'blue' | 'error' => {
+  const colorMap: Record<Quote['status'], 'warning' | 'success' | 'blue' | 'error'> = {
+    'PENDING': 'warning',
+    'RESPONDED': 'success',
+    'ACCEPTED': 'blue',
+    'REJECTED': 'error'
+  };
+  return colorMap[status];
+};
+
+const getStatusConfig = (status: Quote['status']) => ({
+  text: getStatusText(status),
+  color: getStatusColor(status)
+});
+
 export function QuotesSection({ quotes, onViewAll, onQuoteUpdate }: QuotesSectionProps) {
   console.log('QuotesSection quotes:', onViewAll);
   const [updatingQuoteId, setUpdatingQuoteId] = React.useState<string | null>(null);
@@ -63,14 +88,7 @@ export function QuotesSection({ quotes, onViewAll, onQuoteUpdate }: QuotesSectio
           {quotes.slice(0, 5).map((quote) => (
             <DataCard
               key={quote.id}
-              status={{
-                text: quote.status === 'PENDING' ? 'Pendente' :
-                      quote.status === 'RESPONDED' ? 'Respondido' :
-                      quote.status === 'ACCEPTED' ? 'Aceito' : 'Rejeitado',
-                color: quote.status === 'PENDING' ? 'warning' :
-                       quote.status === 'RESPONDED' ? 'success' :
-                       quote.status === 'ACCEPTED' ? 'blue' : 'red'
-              }}
+              status={getStatusConfig(quote.status)}
               title={`Fornecedor: ${quote.supplier.companyName || quote.supplier.name}`}
             >
               <div className="space-y-2">

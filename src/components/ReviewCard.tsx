@@ -25,8 +25,8 @@ export function ReviewCard({ supplier, onReview }: ReviewCardProps) {
             </h3>
             <p className="text-gray-600">{supplier.description}</p>
             <div className="flex flex-wrap gap-2 mt-2">
-              {supplier.services.slice(0, 3).map((service, index) => (
-                <Tag key={index} color="blue">
+              {supplier.services.slice(0, 3).map((service) => (
+                <Tag key={service} color="blue">
                   {service}
                 </Tag>
               ))}

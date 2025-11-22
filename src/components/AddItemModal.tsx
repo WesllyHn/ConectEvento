@@ -18,20 +18,19 @@ interface AddItemModalProps {
 export function AddItemModal({ visible, onCancel, onSubmit, loading }: AddItemModalProps) {
   const [form] = Form.useForm();
 
-const handleOk = async () => {
-  try {
-    const values = await form.validateFields();
-    const normalizedValues = {
-      ...values,
-      price: Number(values.price),
-    };
-    onSubmit(normalizedValues);
-    form.resetFields();
-  } catch (error) {
-    console.error('Validation failed:', error);
-  }
-};
-
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      const normalizedValues = {
+        ...values,
+        price: Number(values.price),
+      };
+      onSubmit(normalizedValues);
+      form.resetFields();
+    } catch (error) {
+      console.error('Validation failed:', error);
+    }
+  };
 
   const handleCancel = () => {
     form.resetFields();
@@ -40,7 +39,7 @@ const handleOk = async () => {
 
   return (
     <Modal
-      title="Adicionar Item ao Roadmap"
+      title={<span className="text-xl font-bold">Adicionar Item ao Roadmap</span>}
       open={visible}
       onOk={handleOk}
       onCancel={handleCancel}
@@ -56,15 +55,15 @@ const handleOk = async () => {
       >
         <Form.Item
           name="title"
-          label="Título do Item"
+          label={<span className="font-semibold">Título do Item</span>}
           rules={[{ required: true, message: 'Por favor, insira o título do item' }]}
         >
-          <Input placeholder="Ex: Fotógrafo, Decoração..." />
+          <Input placeholder="Ex: Fotógrafo, Decoração..." size="large" />
         </Form.Item>
 
         <Form.Item
           name="description"
-          label="Descrição"
+          label={<span className="font-semibold">Descrição</span>}
           rules={[{ required: true, message: 'Por favor, insira a descrição' }]}
         >
           <TextArea
@@ -75,10 +74,10 @@ const handleOk = async () => {
 
         <Form.Item
           name="category"
-          label="Categoria"
+          label={<span className="font-semibold">Categoria</span>}
           rules={[{ required: true, message: 'Por favor, selecione uma categoria' }]}
         >
-          <Select placeholder="Selecione uma categoria">
+          <Select placeholder="Selecione uma categoria" size="large">
             <Option value="BIRTHDAY">Aniversário</Option>
             <Option value="WEDDING">Casamento</Option>
             <Option value="CORPORATE">Corporativo</Option>
@@ -89,10 +88,10 @@ const handleOk = async () => {
 
         <Form.Item
           name="price"
-          label="Preço"
+          label={<span className="font-semibold">Preço</span>}
           rules={[{ required: true, message: 'Por favor, insira o preço' }]}
         >
-          <Input placeholder="Ex: 2000,00" />
+          <Input placeholder="Ex: 2000,00" size="large" />
         </Form.Item>
       </Form>
     </Modal>

@@ -43,9 +43,9 @@ export function SearchFilters({
           />
         )}
 
-        {filters.map((filter, index) => (
+        {filters.map((filter) => (
           <Select
-            key={index}
+            key={`${filter.placeholder}-${filter.value}`}
             value={filter.value}
             onChange={filter.onChange}
             placeholder={filter.placeholder}

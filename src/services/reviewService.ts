@@ -15,12 +15,12 @@ export interface UpdateReviewResponse {
 
 class ReviewService {
   async getSuppliersToReview(organizerId: string): Promise<any[]> {
-    const response = await apiRequest(`/reviews/organizadorId/${organizerId}`) as any;
+    const response = await apiRequest(`/reviews/organizadorId/${organizerId}`);
     return response.data;
   }
 
   async getReviewsByUserId(userId: string, type: 'ORGANIZER' | 'SUPPLIER'): Promise<any[]> {
-    const response = await apiRequest(`/reviews/${userId}?type=${type}`) as any;
+    const response = await apiRequest(`/reviews/${userId}?type=${type}`);
     return response.data;
   }
 
@@ -28,7 +28,7 @@ class ReviewService {
     const response = await apiRequest('/reviews/', {
       method: 'POST',
       body: JSON.stringify(reviewData),
-    }) as any;
+    });
     return response.data;
   }
 
@@ -36,7 +36,7 @@ class ReviewService {
     const response = await apiRequest(`/reviews/${reviewId}`, {
       method: 'PUT',
       body: JSON.stringify(responseData),
-    }) as any;
+    });
     return response.data;
   }
 }

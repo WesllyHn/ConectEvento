@@ -144,33 +144,26 @@ describe('EventHeader', () => {
   expect(screen.getByText(/\d{2}\/\d{2}\/\d{4}/)).toBeInTheDocument();
 });
 
-  it('should render calendar icon', () => {
-    renderComponent();
+it('should render calendar icon', () => {
+  renderComponent();
+  expect(screen.getByLabelText('calendar')).toBeInTheDocument();
+});
 
-    const icons = document.querySelectorAll('.anticon-calendar');
-    expect(icons.length).toBeGreaterThan(0);
-  });
+it('should render location icon', () => {
+  renderComponent();
+  expect(screen.getByLabelText('location')).toBeInTheDocument();
+});
 
-  it('should render location icon', () => {
-    renderComponent();
+it('should render dollar icon', () => {
+  renderComponent();
+  expect(screen.getByLabelText('budget')).toBeInTheDocument();
+});
 
-    const icons = document.querySelectorAll('.anticon-environment');
-    expect(icons.length).toBeGreaterThan(0);
-  });
+it('should render back arrow icon', () => {
+  renderComponent();
+  expect(screen.getByLabelText('back-arrow')).toBeInTheDocument();
+});
 
-  it('should render dollar icon', () => {
-    renderComponent();
-
-    const icons = document.querySelectorAll('.anticon-dollar');
-    expect(icons.length).toBeGreaterThan(0);
-  });
-
-  it('should render back arrow icon', () => {
-    renderComponent();
-
-    const icons = document.querySelectorAll('.anticon-arrow-left');
-    expect(icons.length).toBeGreaterThan(0);
-  });
 it('should render all event details together', () => {
   const event = {
     id: '1',

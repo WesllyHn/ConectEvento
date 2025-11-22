@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RoadmapStats } from './RoadmapStats';
 
@@ -25,7 +25,6 @@ describe('RoadmapStats', () => {
         onFilterChange={mockOnFilterChange}
       />
     );
-
     expect(screen.getByText('Total')).toBeInTheDocument();
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('Planejando')).toBeInTheDocument();
@@ -46,10 +45,13 @@ describe('RoadmapStats', () => {
         onFilterChange={mockOnFilterChange}
       />
     );
-
-    const cards = container.querySelectorAll('.ant-card');
-    expect(cards[1]).toHaveClass('border-2');
+  // Corrigido: pega os cards por '.rounded-2xl'h
+    const cards = container.querySelectorAll('.rounded-2xl');
+    // Planejando é o segundo card no array
+    expect(cards[1].classList.contains('scale-105')).toBe(true);
+    expect(cards[1].classList.contains('border-white')).toBe(true);
   });
+
 
   it('should call onFilterChange when a card is clicked', () => {
     render(
@@ -59,10 +61,9 @@ describe('RoadmapStats', () => {
         onFilterChange={mockOnFilterChange}
       />
     );
-
-    const planningCard = screen.getByText('Planejando').closest('.ant-card');
+    // Busca o botão "Planejando":
+    const planningCard = screen.getByText('Planejando').closest('button');
     fireEvent.click(planningCard!);
-
     expect(mockOnFilterChange).toHaveBeenCalledWith('PLANNING');
   });
 
@@ -74,8 +75,9 @@ describe('RoadmapStats', () => {
         onFilterChange={mockOnFilterChange}
       />
     );
-
-    const activeTexts = screen.getAllByText('Filtro ativo');
+    // Tem ✓ Filtro ativo
+    const activeTexts = screen.getAllByText(/Filtro ativo/);
     expect(activeTexts).toHaveLength(1);
+    expect(activeTexts[0].textContent).toContain('✓'); // Adicional: confere o check
   });
 });

@@ -83,7 +83,14 @@ export const eventTypes = [
   { label: 'Outro', value: 'OTHER' }
 ];
 
-export const budgetRanges = ['0-5000', '5000-10000', '10000-20000', '20000+'];
+export const budgetRanges = [
+  'R$ 0 - R$ 5.000',
+  'R$ 5.000 - R$ 10.000',
+  'R$ 10.000 - R$ 20.000',
+  'R$ 20.000 - R$ 50.000',
+  'R$ 50.000 - R$ 100.000',
+  'R$ 100.000+'
+];
 
 export const serviceOptions = ['Catering', 'Fotografia', 'Decoração', 'Música', 'Outros'];
 

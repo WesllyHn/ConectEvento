@@ -38,7 +38,7 @@ class UserService {
   }
 
   async getUserById(userId: string): Promise<any> {
-    const response = await apiRequest(`/users/userId/${userId}`) as any;
+    const response = await apiRequest(`/users/userId/${userId}`);
     return response.data;
   }
 
@@ -76,7 +76,7 @@ class UserService {
   }
 
   async getSuppliers(): Promise<any[]> {
-    const response = await apiRequest('/users/supplier/') as any;
+    const response = await apiRequest('/users/supplier/');
     return response.data;
   }
 

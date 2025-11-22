@@ -57,7 +57,7 @@ describe('Login', () => {
 
     const emailInput = screen.getByLabelText(/Email/i);
     const passwordInput = screen.getByLabelText(/Senha/i);
-    
+
     await user.type(emailInput, 'maria@email.com');
     await user.type(passwordInput, 'senha');
 
@@ -90,7 +90,6 @@ describe('Login', () => {
       expect(screen.getByText(/Email ou senha incorretos/i)).toBeInTheDocument();
     });
   });
-
   it('deve alternar entre organizador e fornecedor', async () => {
     const user = userEvent.setup();
 
@@ -103,8 +102,7 @@ describe('Login', () => {
     const fornecedorButton = screen.getByText('Fornecedor');
     await user.click(fornecedorButton);
 
-    // Verifica se o botão fornecedor está ativo
-    expect(fornecedorButton).toHaveClass('bg-blue-600');
+    expect(fornecedorButton).toHaveClass('relative z-10 text-blue-700');
   });
 
   it('deve alternar visibilidade da senha', async () => {

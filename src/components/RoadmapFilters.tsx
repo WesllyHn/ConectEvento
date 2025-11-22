@@ -1,7 +1,5 @@
-import { Select, Space } from 'antd';
-import { FilterOutlined } from '@ant-design/icons';
-
-const { Option } = Select;
+import { Filter } from 'lucide-react';
+import { eventTypes } from '../data/mockData';
 
 interface RoadmapFiltersProps {
   activeStatusFilter: string;
@@ -19,38 +17,36 @@ export function RoadmapFilters({
   onCategoryChange,
 }: RoadmapFiltersProps) {
   return (
-    <Space size="middle" wrap>
-      <Space>
-        <FilterOutlined />
-        <span className="text-gray-600">Filtros:</span>
-      </Space>
+    <div className="flex items-center gap-4 flex-wrap">
+      <div className="flex items-center gap-2 text-gray-600">
+        <Filter className="w-5 h-5" />
+        <span className="font-medium">Filtros:</span>
+      </div>
 
-      <Select
+      <select
         value={activeStatusFilter}
-        onChange={onStatusChange}
-        style={{ width: 200 }}
-        placeholder="Filtrar por status"
+        onChange={(e) => onStatusChange(e.target.value)}
+        className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
       >
-        <Option value="all">Todos os status</Option>
-        <Option value="PLANNING">Planejando</Option>
-        <Option value="SEARCHING">Buscando</Option>
-        <Option value="CONTRACTED">Contratado</Option>
-        <Option value="COMPLETED">Concluído</Option>
-      </Select>
+        <option value="all">Todos os status</option>
+        <option value="PLANNING">Planejando</option>
+        <option value="SEARCHING">Buscando</option>
+        <option value="CONTRACTED">Contratado</option>
+        <option value="COMPLETED">Concluído</option>
+      </select>
 
-      <Select
+      <select
         value={filterCategory}
-        onChange={onCategoryChange}
-        style={{ width: 200 }}
-        placeholder="Filtrar por categoria"
+        onChange={(e) => onCategoryChange(e.target.value)}
+        className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
       >
-        <Option value="all">Todas as categorias</Option>
+        <option value="all">Todas as categorias</option>
         {categories.map((category) => (
-          <Option key={category} value={category}>
-            {category}
-          </Option>
+          <option key={category} value={category}>
+            {eventTypes.find(et => et.value === category)?.label}
+          </option>
         ))}
-      </Select>
-    </Space>
+      </select>
+    </div>
   );
 }

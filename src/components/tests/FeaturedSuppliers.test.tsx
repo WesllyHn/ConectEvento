@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import * as userService from '../../services/userService';
+import * as uploadService from '../../services/uploadService';
 
 const mockNavigate = vi.fn();
 const mockIsAuthenticated = { value: false };
@@ -26,55 +28,80 @@ vi.mock('../../context/AuthContext', () => ({
   }),
 }));
 
-// Mock dos dados
-vi.mock('../../data/mockData', () => ({
-  mockSuppliers: [
-    {
-      id: '1',
-      companyName: 'Buffet Delícia',
-      location: 'São Paulo, SP',
-      description: 'Buffet completo para eventos corporativos e festas',
-      services: ['Buffet Completo', 'Coquetel', 'Coffee Break'],
-      rating: 4.8,
-      reviewCount: 125,
-      priceRange: 'mid',
-      avatar: 'https://example.com/avatar1.jpg',
-      portfolio: ['https://example.com/img1.jpg', 'https://example.com/img2.jpg', 'https://example.com/img3.jpg'],
-    },
-    {
-      id: '2',
-      companyName: 'DJ Premium Sound',
-      location: 'Rio de Janeiro, RJ',
-      description: 'Som profissional e iluminação para todos os tipos de eventos',
-      services: ['DJ', 'Som', 'Iluminação'],
-      rating: 4.9,
-      reviewCount: 98,
-      priceRange: 'premium',
-      avatar: 'https://example.com/avatar2.jpg',
-      portfolio: ['https://example.com/img4.jpg', 'https://example.com/img5.jpg', 'https://example.com/img6.jpg'],
-    },
-    {
-      id: '3',
-      companyName: 'Decorações Encanto',
-      location: 'Curitiba, PR',
-      description: 'Decoração temática e personalizada para seu evento',
-      services: ['Decoração', 'Flores', 'Cenografia'],
-      rating: 4.7,
-      reviewCount: 87,
-      priceRange: 'budget',
-      avatar: 'https://example.com/avatar3.jpg',
-      portfolio: ['https://example.com/img7.jpg', 'https://example.com/img8.jpg', 'https://example.com/img9.jpg'],
-    },
-  ],
+// Mock dos serviços
+vi.mock('../../services/userService', () => ({
+  userService: {
+    getSuppliers: vi.fn(),
+  },
+}));
+
+vi.mock('../../services/uploadService', () => ({
+  uploadService: {
+    getImageUrl: vi.fn(),
+  },
 }));
 
 // Importa o componente DEPOIS dos mocks
 import { FeaturedSuppliers } from '../FeaturedSuppliers';
 
 describe('FeaturedSuppliers', () => {
+  const mockSuppliers = [
+    {
+      id: '1',
+      name: 'Buffet Delícia',
+      companyName: 'Buffet Delícia Ltda',
+      location: 'São Paulo, SP',
+      description: 'Buffet completo para eventos corporativos e festas',
+      services: [{ service: 'Buffet Completo' }, { service: 'Coquetel' }, { service: 'Coffee Break' }],
+      rating: 4.8,
+      reviewCount: 125,
+      priceRange: 'MID',
+      avatar: null,
+      portfolio: [
+        { id: 'img1', imageData: [], mimeType: 'image/jpeg' },
+        { id: 'img2', imageData: [], mimeType: 'image/jpeg' },
+      ],
+      availability: true,
+      createdAt: '2025-01-01T00:00:00.000Z',
+    },
+    {
+      id: '2',
+      name: 'DJ Premium Sound',
+      companyName: 'DJ Premium Sound',
+      location: 'Rio de Janeiro, RJ',
+      description: 'Som profissional e iluminação para todos os tipos de eventos',
+      services: [{ service: 'DJ' }, { service: 'Som' }, { service: 'Iluminação' }],
+      rating: 4.9,
+      reviewCount: 98,
+      priceRange: 'PREMIUM',
+      avatar: null,
+      portfolio: [],
+      availability: true,
+      createdAt: '2025-01-02T00:00:00.000Z',
+    },
+    {
+      id: '3',
+      name: 'Decorações Encanto',
+      companyName: 'Decorações Encanto',
+      location: 'Curitiba, PR',
+      description: 'Decoração temática e personalizada para seu evento',
+      services: [{ service: 'Decoração' }, { service: 'Flores' }],
+      rating: 4.7,
+      reviewCount: 87,
+      priceRange: 'BUDGET',
+      avatar: null,
+      portfolio: [],
+      availability: true,
+      createdAt: '2025-01-03T00:00:00.000Z',
+    },
+  ];
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsAuthenticated.value = false;
+    
+    vi.mocked(userService.userService.getSuppliers).mockResolvedValue(mockSuppliers);
+    vi.mocked(uploadService.uploadService.getImageUrl).mockReturnValue('https://example.com/image.jpg');
   });
 
   const renderComponent = () => {
@@ -85,130 +112,115 @@ describe('FeaturedSuppliers', () => {
     );
   };
 
-  it('should render section title correctly', () => {
+  it('should render loading state initially', () => {
     renderComponent();
 
-    expect(screen.getByText('Fornecedores em Destaque')).toBeInTheDocument();
+    // Verifica se os skeletons estão sendo renderizados
+    const { container } = render(
+      <MemoryRouter>
+        <FeaturedSuppliers />
+      </MemoryRouter>
+    );
+    
+    const skeletons = container.querySelectorAll('.animate-pulse');
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
-  it('should render section subtitle correctly', () => {
+  it('should load and display suppliers', async () => {
     renderComponent();
 
-    expect(
-      screen.getByText(/Profissionais com as melhores avaliações e maior experiência no mercado/i)
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Buffet Delícia Ltda')).toBeInTheDocument();
+      expect(screen.getByText('DJ Premium Sound')).toBeInTheDocument();
+      expect(screen.getByText('Decorações Encanto')).toBeInTheDocument();
+    });
+
+    expect(userService.userService.getSuppliers).toHaveBeenCalled();
   });
 
-  it('should render exactly 3 featured suppliers', () => {
+  it('should render section title correctly', async () => {
     renderComponent();
 
-    expect(screen.getByText('Buffet Delícia')).toBeInTheDocument();
-    expect(screen.getByText('DJ Premium Sound')).toBeInTheDocument();
-    expect(screen.getByText('Decorações Encanto')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Profissionais em Destaque')).toBeInTheDocument();
+    });
   });
 
-  it('should render supplier company names', () => {
+  it('should render section subtitle correctly', async () => {
     renderComponent();
 
-    expect(screen.getByText('Buffet Delícia')).toBeInTheDocument();
-    expect(screen.getByText('DJ Premium Sound')).toBeInTheDocument();
-    expect(screen.getByText('Decorações Encanto')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Conheça os fornecedores mais bem avaliados e contratados da plataforma/i)
+      ).toBeInTheDocument();
+    });
   });
 
-  it('should render supplier locations', () => {
+  it('should render supplier locations', async () => {
     renderComponent();
 
-    expect(screen.getByText('São Paulo, SP')).toBeInTheDocument();
-    expect(screen.getByText('Rio de Janeiro, RJ')).toBeInTheDocument();
-    expect(screen.getByText('Curitiba, PR')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('São Paulo, SP')).toBeInTheDocument();
+      expect(screen.getByText('Rio de Janeiro, RJ')).toBeInTheDocument();
+      expect(screen.getByText('Curitiba, PR')).toBeInTheDocument();
+    });
   });
 
-  it('should render supplier descriptions', () => {
+  it('should render supplier descriptions', async () => {
     renderComponent();
 
-    expect(screen.getByText('Buffet completo para eventos corporativos e festas')).toBeInTheDocument();
-    expect(screen.getByText('Som profissional e iluminação para todos os tipos de eventos')).toBeInTheDocument();
-    expect(screen.getByText('Decoração temática e personalizada para seu evento')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Buffet completo para eventos corporativos e festas')).toBeInTheDocument();
+      expect(screen.getByText('Som profissional e iluminação para todos os tipos de eventos')).toBeInTheDocument();
+      expect(screen.getByText('Decoração temática e personalizada para seu evento')).toBeInTheDocument();
+    });
   });
 
-  it('should render supplier services limited to 3', () => {
+  it('should render supplier ratings', async () => {
     renderComponent();
 
-    expect(screen.getByText('Buffet Completo')).toBeInTheDocument();
-    expect(screen.getByText('Coquetel')).toBeInTheDocument();
-    expect(screen.getByText('Coffee Break')).toBeInTheDocument();
-    expect(screen.getByText('DJ')).toBeInTheDocument();
-    expect(screen.getByText('Som')).toBeInTheDocument();
-    expect(screen.getByText('Iluminação')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('4.8')).toBeInTheDocument();
+      expect(screen.getByText('4.9')).toBeInTheDocument();
+      expect(screen.getByText('4.7')).toBeInTheDocument();
+    });
   });
 
-  it('should render supplier ratings', () => {
+  it('should render supplier review counts', async () => {
     renderComponent();
 
-    expect(screen.getByText('4.8')).toBeInTheDocument();
-    expect(screen.getByText('4.9')).toBeInTheDocument();
-    expect(screen.getByText('4.7')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('125 avaliações')).toBeInTheDocument();
+      expect(screen.getByText('98 avaliações')).toBeInTheDocument();
+      expect(screen.getByText('87 avaliações')).toBeInTheDocument();
+    });
   });
 
-  it('should render supplier review counts', () => {
+  it('should render price range badges correctly', async () => {
     renderComponent();
 
-    expect(screen.getByText('(125 avaliações)')).toBeInTheDocument();
-    expect(screen.getByText('(98 avaliações)')).toBeInTheDocument();
-    expect(screen.getByText('(87 avaliações)')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Intermediário')).toBeInTheDocument();
+      expect(screen.getByText('Premium')).toBeInTheDocument();
+      expect(screen.getByText('Econômico')).toBeInTheDocument();
+    });
   });
 
-  it('should render price range badges correctly', () => {
-    renderComponent();
-
-    expect(screen.getByText('Intermediário')).toBeInTheDocument();
-    expect(screen.getByText('Premium')).toBeInTheDocument();
-    expect(screen.getByText('Econômico')).toBeInTheDocument();
-  });
-
-  it('should render lock icon and login text when not authenticated', () => {
-    mockIsAuthenticated.value = false;
-    renderComponent();
-
-    const loginTexts = screen.getAllByText('Login');
-    expect(loginTexts.length).toBe(3);
-  });
-
-  it('should not render lock icon when authenticated', () => {
-    mockIsAuthenticated.value = true;
-    renderComponent();
-
-    const loginTexts = screen.queryAllByText('Login');
-    expect(loginTexts.length).toBe(0);
-  });
-
-  it('should render "Ver Todos os Fornecedores" button', () => {
-    renderComponent();
-
-    expect(screen.getByText('Ver Todos os Fornecedores')).toBeInTheDocument();
-  });
-
-  it('should navigate to /suppliers when clicking "Ver Todos" button', async () => {
-    const user = userEvent.setup();
-    renderComponent();
-
-    const button = screen.getByText('Ver Todos os Fornecedores');
-    await user.click(button);
-
-    expect(mockNavigate).toHaveBeenCalledWith('/suppliers');
-  });
-
-  it('should navigate to login when clicking supplier card while not authenticated', async () => {
+  it('should navigate to login with return path when clicking supplier card while not authenticated', async () => {
     const user = userEvent.setup();
     mockIsAuthenticated.value = false;
     renderComponent();
 
-    const supplierCard = screen.getByText('Buffet Delícia').closest('div');
+    await waitFor(() => {
+      expect(screen.getByText('Buffet Delícia Ltda')).toBeInTheDocument();
+    });
+
+    const supplierCard = screen.getByText('Buffet Delícia Ltda').closest('[role="button"]');
     if (supplierCard) {
       await user.click(supplierCard);
     }
 
-    expect(mockNavigate).toHaveBeenCalledWith('/login');
+    expect(mockNavigate).toHaveBeenCalledWith('/login', { state: { returnTo: '/supplier/1' } });
   });
 
   it('should navigate to supplier detail when clicking supplier card while authenticated', async () => {
@@ -216,7 +228,11 @@ describe('FeaturedSuppliers', () => {
     mockIsAuthenticated.value = true;
     renderComponent();
 
-    const supplierCard = screen.getByText('Buffet Delícia').closest('div');
+    await waitFor(() => {
+      expect(screen.getByText('Buffet Delícia Ltda')).toBeInTheDocument();
+    });
+
+    const supplierCard = screen.getByText('Buffet Delícia Ltda').closest('[role="button"]');
     if (supplierCard) {
       await user.click(supplierCard);
     }
@@ -224,55 +240,97 @@ describe('FeaturedSuppliers', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/supplier/1');
   });
 
-  it('should render supplier avatars with correct alt text', () => {
+  it('should render error state when API fails', async () => {
+    vi.mocked(userService.userService.getSuppliers).mockRejectedValue(new Error('API Error'));
+    
     renderComponent();
 
-    const avatar1 = screen.getByAltText('Buffet Delícia');
-    const avatar2 = screen.getByAltText('DJ Premium Sound');
-    const avatar3 = screen.getByAltText('Decorações Encanto');
-
-    expect(avatar1).toBeInTheDocument();
-    expect(avatar2).toBeInTheDocument();
-    expect(avatar3).toBeInTheDocument();
+    // Aguarda até 4 tentativas de retry (cada uma com delays exponenciais)
+    // Tentativa 1: imediato
+    // Tentativa 2: após 1s
+    // Tentativa 3: após 2s
+    // Tentativa 4: após 4s
+    // Total: aproximadamente 7-8 segundos
+    await waitFor(() => {
+      expect(screen.getByText((content, element) => {
+        return element?.textContent === 'Ops! Algo deu errado';
+      })).toBeInTheDocument();
+    }, { timeout: 10000 });
   });
 
-  it('should render portfolio images', () => {
-    const { container } = renderComponent();
-
-    const portfolioImages = container.querySelectorAll('img[alt="Portfolio"]');
-    expect(portfolioImages.length).toBe(9); // 3 suppliers x 3 images each
-  });
-
-  it('should render star icons for ratings', () => {
-    const { container } = renderComponent();
-
-    const starIcons = container.querySelectorAll('svg');
-    expect(starIcons.length).toBeGreaterThan(0);
-  });
-
-  it('should render MapPin icons for locations', () => {
+  it('should show retry button on error', async () => {
+    vi.mocked(userService.userService.getSuppliers).mockRejectedValue(new Error('API Error'));
+    
     renderComponent();
 
-    const locations = screen.getAllByText(/São Paulo|Rio de Janeiro|Curitiba/);
-    expect(locations.length).toBeGreaterThan(0);
+    await waitFor(() => {
+      expect(screen.getByText((content, element) => {
+        return element?.textContent === 'Tentar novamente';
+      })).toBeInTheDocument();
+    }, { timeout: 10000 });
   });
 
-  it('should navigate to different supplier details when clicking different cards', async () => {
+  it('should render empty state when no suppliers available', async () => {
+    vi.mocked(userService.userService.getSuppliers).mockResolvedValue([]);
+    
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Nenhum fornecedor em destaque')).toBeInTheDocument();
+    });
+  });
+
+  it('should render star icons for ratings', async () => {
+    const { container } = renderComponent();
+
+    await waitFor(() => {
+      const starIcons = container.querySelectorAll('svg');
+      expect(starIcons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('should render services badges', async () => {
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Buffet Completo')).toBeInTheDocument();
+      expect(screen.getByText('DJ')).toBeInTheDocument();
+      expect(screen.getByText('Decoração')).toBeInTheDocument();
+    });
+  });
+
+  it('should render "Ver perfil" link for each supplier', async () => {
+    renderComponent();
+
+    await waitFor(() => {
+      const verPerfilLinks = screen.getAllByText('Ver perfil');
+      expect(verPerfilLinks.length).toBe(3);
+    });
+  });
+
+  it('should handle keyboard navigation', async () => {
     const user = userEvent.setup();
     mockIsAuthenticated.value = true;
     renderComponent();
 
-    const supplier1 = screen.getByText('Buffet Delícia').closest('div');
-    const supplier2 = screen.getByText('DJ Premium Sound').closest('div');
+    await waitFor(() => {
+      expect(screen.getByText('Buffet Delícia Ltda')).toBeInTheDocument();
+    });
 
-    if (supplier1) {
-      await user.click(supplier1);
+    const supplierCard = screen.getByText('Buffet Delícia Ltda').closest('[role="button"]');
+    if (supplierCard) {
+      supplierCard.focus();
+      await user.keyboard('{Enter}');
     }
+
     expect(mockNavigate).toHaveBeenCalledWith('/supplier/1');
+  });
 
-    if (supplier2) {
-      await user.click(supplier2);
-    }
-    expect(mockNavigate).toHaveBeenCalledWith('/supplier/2');
+  it('should display badge with platform name', async () => {
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Destaques do ConectEvento')).toBeInTheDocument();
+    });
   });
 });

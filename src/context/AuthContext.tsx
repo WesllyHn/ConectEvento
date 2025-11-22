@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { User } from '../types';
 import { userService, LoginCredentials } from '../services';
 
@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: userData.id,
         name: userData.name,
         email: userData.email,
-        type: userType as 'organizer' | 'supplier',
+        type: userType,
         avatar: userData.avatar,
         companyName: userData.companyName,
         description: userData.description,
@@ -94,19 +94,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('user');
   };
 
+  const contextValue = useMemo(() => ({
+    user,
+    login,
+    register,
+    logout,
+    isAuthenticated: !!user
+  }), [user]);
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      login,
-      register,
-      logout,
-      isAuthenticated: !!user
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

@@ -95,8 +95,10 @@ it('should display loading state', () => {
         onSearch={mockOnSearch}
       />
     );
-
-    const cards = container.querySelectorAll('.ant-card');
+    // Ajuste: procure por classe genérica ou adicione data-testid no componente
+    const cards = container.querySelectorAll('.rounded-xl');
     expect(cards.length).toBe(2);
+
   });
+
 });

@@ -1,5 +1,5 @@
-import { Empty, Spin } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
+import { Spin } from 'antd';
+import { FileText } from 'lucide-react';
 import { RoadmapItemCard } from './RoadmapItem';
 import { RoadmapItem } from '../services/roadmapService';
 
@@ -15,22 +15,24 @@ export function RoadmapList({ items, loading, onStatusChange, onDelete, onSearch
   if (loading) {
     return (
       <div className="text-center py-12">
-        <Spin size="large" tip="Carregando roadmap..." />
+        <Spin size="large" />
+        <p className="text-gray-600 mt-4">Carregando roadmap...</p>
       </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <Empty
-        image={<InboxOutlined style={{ fontSize: 64, color: '#d9d9d9' }} />}
-        description="Nenhum item encontrado"
-      />
+      <div className="text-center py-12">
+        <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhum item encontrado</h3>
+        <p className="text-gray-600">Adicione itens ao roadmap para começar</p>
+      </div>
     );
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       {items.map((item) => (
         <RoadmapItemCard
           key={item.id}
