@@ -2,9 +2,9 @@ name: Frontend CI
 
 on:
   push:
-    branches: [main, develop, pipeline]
+    branches: [main, pipeline]
   pull_request:
-    branches: [main, develop, pipeline]
+    branches: [main, pipeline]
 
 env:
   NODE_VERSION: '20.x'
