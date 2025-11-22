@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { RoadmapList } from './RoadmapList';
-// import { RoadmapItem } from '../../services/roadmapService';
 import { RoadmapItem } from '../services';
 
 describe('RoadmapList', () => {
@@ -45,11 +44,9 @@ it('should display loading state', () => {
     />
   );
 
-  // Método 1: Busca pela classe CSS do Ant Design Spin
   const spinner = container.querySelector('.ant-spin-spinning');
   expect(spinner).toBeInTheDocument();
   
-  // OU Método 2: Busca pelo elemento com aria-busy
   const loadingElement = container.querySelector('[aria-busy="true"]');
   expect(loadingElement).toBeInTheDocument();
 });
@@ -95,7 +92,6 @@ it('should display loading state', () => {
         onSearch={mockOnSearch}
       />
     );
-    // Ajuste: procure por classe genérica ou adicione data-testid no componente
     const cards = container.querySelectorAll('.rounded-xl');
     expect(cards.length).toBe(2);
 

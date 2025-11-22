@@ -32,7 +32,6 @@ export interface LoginCredentials {
 }
 
 class UserService {
-  // Buscar todos os usuários
   async getAllUsers(): Promise<User[]> {
     return apiRequest('/users');
   }
@@ -42,7 +41,6 @@ class UserService {
     return response.data;
   }
 
-  // Criar novo usuário
   async createUser(userData: CreateUserData): Promise<User> {
     return apiRequest('/users', {
       method: 'POST',
@@ -50,7 +48,6 @@ class UserService {
     });
   }
 
-  // Atualizar usuário
   async updateUser(userId: string, userData: UpdateUserData): Promise<User> {
     return apiRequest(`/users/${userId}`, {
       method: 'PUT',
@@ -58,14 +55,12 @@ class UserService {
     });
   }
 
-  // Deletar usuário
   async deleteUser(userId: string): Promise<void> {
     return apiRequest(`/users/${userId}`, {
       method: 'DELETE',
     });
   }
 
-  // Login do usuário
   async loginUser(credentials: LoginCredentials): Promise<User> {
     const params = new URLSearchParams({
       email: credentials.email,
@@ -80,7 +75,6 @@ class UserService {
     return response.data;
   }
 
-  // Buscar organizadores (usuários do tipo ORGANIZER)
   async getOrganizers(): Promise<User[]> {
     const users = await this.getAllUsers();
     return users.filter(user => user.type === 'organizer');

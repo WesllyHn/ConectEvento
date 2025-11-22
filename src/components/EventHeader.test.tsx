@@ -62,7 +62,6 @@ describe('EventHeader', () => {
   it('should render formatted event date', () => {
     render(<EventHeader event={mockEvent} completionPercentage={60} />);
     
-    // Usar regex flexível para qualquer data no formato DD/MM/YYYY
     expect(screen.getByText(/\d{2}\/\d{2}\/\d{4}/)).toBeInTheDocument();
   });
 
@@ -140,7 +139,6 @@ describe('EventHeader', () => {
   const eventWithDifferentDate = { ...mockEvent, date: '2025-07-15' };
   render(<EventHeader event={eventWithDifferentDate} completionPercentage={60} />);
   
-  // Busca por qualquer data formatada
   expect(screen.getByText(/\d{2}\/\d{2}\/\d{4}/)).toBeInTheDocument();
 });
 

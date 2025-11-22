@@ -1,4 +1,3 @@
-// Hero.tsx
 import React, { useState } from 'react';
 import { Search, MapPin, DollarSign, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +15,6 @@ export function Hero() {
 
   return (
     <div className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-purple-900 overflow-hidden">
-      {/* Imagem com corte diagonal */}
       <div className="absolute top-0 right-0 w-1/2 h-full hidden lg:block">
         <div className="relative w-full h-full" style={{
           clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 0% 100%)',
@@ -24,7 +22,7 @@ export function Hero() {
           transform: 'translateZ(0)',
         }}>
           <img
-            src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200"
+            src="https://www.sp.senac.br/documents/portlet_file_entry/51828463/dicas+para+um+evento+de+sucesso.webp/0453a6e1-5c79-ba90-d46d-009062d3ad4d?w=1200"
             alt="Evento"
             className="w-full h-full object-cover opacity-80"
           />

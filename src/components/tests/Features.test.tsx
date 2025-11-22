@@ -39,16 +39,13 @@ describe('Features component', () => {
   it('renders static sections (steps and features)', () => {
     renderComponent();
 
-    // títulos principais
     expect(screen.getByText('Como funciona?')).toBeInTheDocument();
     expect(screen.getByText('Por que usar o ConectEvento?')).toBeInTheDocument();
 
-    // passos
     expect(screen.getByText('Cadastre-se')).toBeInTheDocument();
     expect(screen.getByText('Explore')).toBeInTheDocument();
     expect(screen.getByText('Contrate')).toBeInTheDocument();
 
-    // features
     expect(screen.getByText('Busca Inteligente')).toBeInTheDocument();
     expect(screen.getByText('Solicitação de Orçamentos')).toBeInTheDocument();
     expect(screen.getByText('Sistema de Avaliações')).toBeInTheDocument();
@@ -56,7 +53,6 @@ describe('Features component', () => {
   });
 
   it('calls userService.getSuppliers and displays stats after loading', async () => {
-    // mock de fornecedores com rating/reviewCount
     vi.mocked(userService.userService.getSuppliers).mockResolvedValue([
       { id: 's1', rating: 4.5, reviewCount: 10 },
       { id: 's2', rating: 4.0, reviewCount: 5 },
@@ -69,18 +65,14 @@ describe('Features component', () => {
       expect(userService.userService.getSuppliers).toHaveBeenCalled();
     });
 
-    // fornecedores cadastrados (3)
     await waitFor(() => {
       expect(screen.getByText('3+')).toBeInTheDocument();
     });
 
-    // média ponderada: (4.5*10 + 4.0*5) / 15 = 4.3 → 4.3/5
     expect(screen.getByText('4.3/5')).toBeInTheDocument();
 
-    // eventos estimados = totalReviews / 4 => (10+5)/4 = 3.75 ≈ 4
     expect(screen.getByText('4+')).toBeInTheDocument();
 
-    // satisfação de acordo com média (4.3 → 90%)
     expect(screen.getByText('90%')).toBeInTheDocument();
   });
 

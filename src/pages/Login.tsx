@@ -36,7 +36,6 @@ export function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-purple-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background decorativo */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{
           backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
@@ -44,7 +43,6 @@ export function Login() {
         }}></div>
       </div>
 
-      {/* Gradient blobs decorativos */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full filter blur-3xl opacity-20 animate-pulse"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
 
@@ -78,7 +76,6 @@ export function Login() {
               </div>
             )}
 
-            {/* Seletor de tipo de usuário */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">
                 Você é:
@@ -123,7 +120,6 @@ export function Login() {
               </div>
             </div>
 
-            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                 Email
@@ -142,7 +138,6 @@ export function Login() {
               </div>
             </div>
 
-            {/* Senha */}
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                 Senha
@@ -168,7 +163,6 @@ export function Login() {
               </div>
             </div>
 
-            {/* Botão de submit */}
             <button
               type="submit"
               disabled={isLoading}
@@ -192,7 +186,6 @@ export function Login() {
             </button>
           </form>
 
-          {/* Links adicionais */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Não tem uma conta?{' '}
@@ -203,7 +196,6 @@ export function Login() {
           </div>
         </div>
 
-        {/* Informação extra */}
         <div className="mt-6 text-center">
           <p className="text-sm text-blue-100">
             Ao fazer login, você concorda com nossos termos de uso

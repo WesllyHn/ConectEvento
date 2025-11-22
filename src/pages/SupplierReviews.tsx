@@ -35,7 +35,6 @@ const eventTypeMap: Record<string, string> = {
   OTHER: 'Outro'
 };
 
-// Componente de Stat Card colorido
 const ColoredStatCard = ({
   title,
   value,
@@ -156,7 +155,6 @@ export function SupplierReviews() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate('/supplier-dashboard')}
@@ -191,7 +189,6 @@ export function SupplierReviews() {
 
           return (
             <>
-              {/* Stats Overview */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <ColoredStatCard
                   title="Total de Avaliações"
@@ -224,7 +221,6 @@ export function SupplierReviews() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Rating Distribution */}
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                     <BarChart3 className="w-6 h-6 text-blue-600" />
@@ -255,7 +251,6 @@ export function SupplierReviews() {
                   </div>
                 </div>
 
-                {/* Reviews List */}
                 <div className="lg:col-span-2">
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-6">Avaliações Recebidas</h2>
@@ -336,7 +331,6 @@ export function SupplierReviews() {
         })()}
       </div>
 
-      {/* Response Modal */}
       {showResponseModal && selectedReview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
@@ -351,7 +345,6 @@ export function SupplierReviews() {
                 </button>
               </div>
 
-              {/* Review Preview */}
               <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 rounded-xl mb-6 border border-gray-200">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">

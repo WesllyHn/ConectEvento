@@ -3,6 +3,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { User, LogOut, Menu, X, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Dropdown } from 'antd';
+import logo from '../assets/logo.png';
+import logo2 from '../assets/logo2.png';
+import logo3 from '../assets/logo3.png';
+import logo4 from '../assets/logo4.png';
 
 export function Header() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -43,9 +47,9 @@ export function Header() {
 
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl blur opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
-              <div className="relative w-11 h-11 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 group-hover:rotate-3">
-                <Calendar className="w-6 h-6 text-white" />
+              <div className="absolute inset-0 rounded-xl blur opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+              <div className="relative w-11 h-11 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 group-hover:rotate-3">
+                <img src={logo4} className="rounded-lg"/>
               </div>
             </div>
             <div className="flex flex-col">
@@ -79,11 +83,9 @@ export function Header() {
             </nav>
           )}
 
-          {/* Right side */}
           <div className="flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                {/* User Menu - Desktop */}
                 <div className="hidden md:block">
                   <Dropdown
                     menu={{ items: userMenuItems }}
@@ -115,7 +117,6 @@ export function Header() {
                   </Dropdown>
                 </div>
 
-                {/* Mobile Menu Button */}
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -148,7 +149,6 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isAuthenticated && mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <nav className="flex flex-col space-y-1">

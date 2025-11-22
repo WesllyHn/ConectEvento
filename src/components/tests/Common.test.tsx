@@ -374,7 +374,6 @@ describe('UIComponents', () => {
 
       const { container } = render(<SearchFilters filters={filters} />);
 
-      // Verifica se o Select do Ant Design foi renderizado
       const select = container.querySelector('.ant-select');
       expect(select).toBeInTheDocument();
     });
@@ -397,7 +396,6 @@ describe('UIComponents', () => {
 
       const { container } = render(<SearchFilters filters={filters} />);
 
-      // Verifica se múltiplos Selects foram renderizados
       const selects = container.querySelectorAll('.ant-select');
       expect(selects.length).toBe(2);
     });
@@ -425,7 +423,6 @@ describe('UIComponents', () => {
       expect(screen.getByPlaceholderText('Buscar...')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('Localização...')).toBeInTheDocument();
 
-      // Verifica se o Select foi renderizado
       const select = container.querySelector('.ant-select');
       expect(select).toBeInTheDocument();
     });

@@ -1,5 +1,3 @@
-// src/utils/locationService.ts
-
 export interface LocationResult {
   name: string;
   type: 'city' | 'neighborhood' | 'address';
@@ -83,7 +81,6 @@ const processLocationItem = (item: any): LocationResult => {
 };
 
 export const locationService = {
-  // Busca cidades brasileiras via IBGE
   async searchCities(query: string): Promise<LocationResult[]> {
     if (!query || query.length < 3) return [];
     try {
@@ -108,7 +105,6 @@ export const locationService = {
     }
   },
 
-  // Busca localizações via Nominatim (OpenStreetMap)
   async searchLocations(query: string): Promise<LocationResult[]> {
     if (!query || query.length < 3) return [];
     try {
@@ -130,7 +126,6 @@ export const locationService = {
     }
   },
 
-  // Busca combinada: Nominatim antes, fallback IBGE depois
   async searchAll(query: string): Promise<LocationResult[]> {
     if (!query || query.length < 3) return [];
     try {

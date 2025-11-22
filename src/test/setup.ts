@@ -8,7 +8,6 @@ afterEach(() => {
   cleanup();
 });
 
-// Mock do matchMedia (você já tem)
 global.matchMedia = global.matchMedia || function () {
   return {
     matches: false,
@@ -34,7 +33,6 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// ✅ ADICIONE ESTE MOCK DO getComputedStyle
 Object.defineProperty(window, 'getComputedStyle', {
   value: () => ({
     getPropertyValue: () => '',
@@ -43,7 +41,6 @@ Object.defineProperty(window, 'getComputedStyle', {
   }),
 });
 
-// ✅ ADICIONE: Suprimir warnings do React no console (opcional, mas limpa os logs)
 const originalError = console.error;
 beforeAll(() => {
   console.error = (...args: any[]) => {

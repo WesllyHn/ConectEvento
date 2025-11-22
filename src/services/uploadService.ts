@@ -11,7 +11,6 @@ export interface UploadedImage {
 
 class UploadService {
   async uploadImageBase64(supplierId: string, file: File): Promise<UploadedImage> {
-    // lê o arquivo em base64 (sem prefix)
     const base64 = await this.fileToBase64(file);
     const base64NoPrefix = base64.replace(/^data:.*;base64,/, '');
 
@@ -47,6 +46,17 @@ class UploadService {
 
   getImageUrl(imageId: string): string {
     return `${API_BASE_URL}/upload/${imageId}`;
+  }
+
+  async deleteImage(imageId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/upload/${imageId}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Erro ao deletar imagem: ${response.status} - ${text}`);
+    }
   }
 
   private fileToBase64(file: File): Promise<string> {

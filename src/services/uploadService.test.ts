@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { uploadService, UploadedImage } from './uploadService';
 import { API_BASE_URL } from './api';
 
-// Mock do fetch global
 global.fetch = vi.fn();
 
 describe('uploadService', () => {
@@ -27,7 +26,6 @@ describe('uploadService', () => {
     it('should upload an image successfully', async () => {
       const mockFile = new File(['test content'], 'test-image.jpg', { type: 'image/jpeg' });
       
-      // Mock FileReader
       const mockFileReader: any = {
         readAsDataURL: vi.fn(),
         result: 'data:image/jpeg;base64,dGVzdCBjb250ZW50',
@@ -98,7 +96,6 @@ describe('uploadService', () => {
       const callArgs = vi.mocked(fetch).mock.calls[0];
       const body = JSON.parse(callArgs[1]?.body as string);
 
-      // Verifica que o base64 não contém o prefix
       expect(body.data).not.toContain('data:');
       expect(body.data).not.toContain('base64,');
       expect(body.data).toBe('YWJjMTIz');
@@ -363,7 +360,6 @@ describe('uploadService', () => {
       expect(uploadResult.id).toBe('img-1');
       expect(uploadResult.fileName).toBe('test-image.jpg');
 
-      // Verify URL generation for uploaded image
       const imageUrl = uploadService.getImageUrl(uploadResult.id);
       expect(imageUrl).toBe(`${API_BASE_URL}/upload/${uploadResult.id}`);
     });

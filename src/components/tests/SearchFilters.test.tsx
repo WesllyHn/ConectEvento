@@ -159,11 +159,9 @@ describe('SearchFilters', () => {
       />
     );
 
-    // Verificar que os selects foram renderizados
     const selects = container.querySelectorAll('.ant-select');
     expect(selects.length).toBe(2);
     
-    // Verificar pelos valores selecionados ao invés de placeholders
     expect(screen.getByText('Todos')).toBeInTheDocument();
     expect(screen.getByText('Todos os orçamentos')).toBeInTheDocument();
   });
@@ -194,18 +192,15 @@ it('should render all filter options', async () => {
   expect(selects.length).toBe(2);
 
   if (selects[0]) {
-    // Clicar no selector
     const selector = selects[0].querySelector('.ant-select-selector');
     if (selector) {
       await user.click(selector);
 
-      // Aguardar as opções aparecerem - o Ant Design renderiza no body
       await waitFor(() => {
         const dropdown = document.querySelector('.ant-select-dropdown');
         expect(dropdown).toBeInTheDocument();
       });
 
-      // Verificar que as opções estão presentes
       const options = document.querySelectorAll('.ant-select-item-option-content');
       expect(options.length).toBeGreaterThan(0);
     }
@@ -226,7 +221,6 @@ it('should render all filter options', async () => {
     if (firstSelect) {
       await user.click(firstSelect);
       
-      // Simplificar - apenas verificar que o select está renderizado
       expect(firstSelect).toBeInTheDocument();
     }
   });
@@ -244,7 +238,6 @@ it('should render all filter options', async () => {
 
     expect(screen.getByPlaceholderText('Buscar...')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Localização...')).toBeInTheDocument();
-    // Verificar pelos valores selecionados ao invés de placeholders
     expect(screen.getByText('Todos')).toBeInTheDocument();
     expect(screen.getByText('Todos os orçamentos')).toBeInTheDocument();
   });

@@ -22,7 +22,6 @@ import { eventTypes } from '../data/mockData';
 
 const { TextArea } = Input;
 
-// Componente de Stat Card com cores
 const ColoredStatCard = ({
   title,
   value,
@@ -108,7 +107,6 @@ export function Reviews() {
         setSuppliersToReview(suppliers);
         setExistingReviews(reviews);
 
-        // Carrega avatares dos fornecedores
         const supplierIds = [
           ...new Set([
             ...suppliers.map((s: any) => s.fornecedorId),
@@ -224,7 +222,7 @@ export function Reviews() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+
         <div className="mb-8">
           <button
             onClick={() => navigate('/dashboard')}
@@ -244,7 +242,6 @@ export function Reviews() {
           </p>
         </div>
 
-        {/* Stats Cards - Apenas para Organizadores */}
         {!isSupplier && (
           <Row gutter={[16, 16]} className="mb-8">
             <Col xs={24} sm={8}>
@@ -279,7 +276,6 @@ export function Reviews() {
           </Row>
         )}
 
-        {/* Lista de Fornecedores para Avaliar - Apenas para Organizadores */}
         {!isSupplier && (
           <>
             {suppliersToReview.length > 0 ? (
@@ -388,7 +384,6 @@ export function Reviews() {
           </>
         )}
 
-        {/* Lista de Avaliações */}
         {existingReviews.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
@@ -491,7 +486,6 @@ export function Reviews() {
           </div>
         )}
 
-        {/* Empty State para Fornecedores sem avaliações */}
         {isSupplier && existingReviews.length === 0 && (
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
             <Empty
@@ -502,7 +496,6 @@ export function Reviews() {
         )}
       </div>
 
-      {/* Modal de Avaliação */}
       <Modal
         title={<span className="text-xl font-bold">Avaliar Fornecedor</span>}
         open={showReviewModal}
@@ -563,7 +556,6 @@ export function Reviews() {
         )}
       </Modal>
 
-      {/* Modal de Resposta */}
       <Modal
         title={<span className="text-xl font-bold">Responder Avaliação</span>}
         open={showResponseModal}

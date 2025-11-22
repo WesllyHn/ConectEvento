@@ -15,7 +15,6 @@ export function Footer() {
     <footer className="bg-gray-900 text-white py-12 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo e Descrição */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2 mb-4 cursor-pointer" onClick={() => handleNavigation('/')}>
               <div className="w-9 h-9 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
