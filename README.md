@@ -38,7 +38,6 @@ A organização de eventos no modelo tradicional enfrenta diversos desafios:
 - **Linguagem:** JavaScript / TypeScript
 - **Framework:** React.js
 - **Gerenciamento de Formulários:** React Hook Form
-- **Validação:** Zod
 - **Estilização:** Tailwind CSS
 - **Testes:** Jest
 
@@ -61,7 +60,6 @@ A organização de eventos no modelo tradicional enfrenta diversos desafios:
 - **Validação rigorosa** de CPF/CNPJ e dados de login
 - **Prevenção de SQL Injection** com ORM
 - **Configuração de CORS** e rate limiting
-- **Conformidade com LGPD** - coleta mediante consentimento
 
 ### ⚙️ DevOps e Ferramentas
 - **Controle de versão:** GitHub
@@ -69,8 +67,7 @@ A organização de eventos no modelo tradicional enfrenta diversos desafios:
 - **Containerização:** Docker
 - **Testes de API:** Postman
 - **CI/CD:** GitHub Actions
-- **Documentação:** Swagger/OpenAPI
-- **Hospedagem:** Vercel (front-end) + Railway (back-end)
+- **Hospedagem:** Aws Amplify (front-end) + AWS EC2, ECS e RDS (back-end)
 
 ---
 
@@ -79,7 +76,6 @@ A organização de eventos no modelo tradicional enfrenta diversos desafios:
 A segurança é um dos pilares do **ConectEvento**. As práticas implementadas visam garantir a integridade da plataforma e a privacidade dos usuários:
 
 ### 🛡️ Medidas Implementadas
-- **Autenticação Segura:** JWT com políticas de expiração
 - **Proteção de Dados:** Hash bcrypt + armazenamento seguro
 - **Validação Rigorosa:** Checagem em todas as entradas
 - **Prevenção de Ataques:** Anti SQL Injection + CORS + Rate Limiting
@@ -87,20 +83,14 @@ A segurança é um dos pilares do **ConectEvento**. As práticas implementadas v
 - **Backups:** Automáticos semanais com testes de restauração
 - **Testes de Segurança:** Análise de vulnerabilidades no CI/CD
 
-### 📋 Conformidade LGPD
-- Coleta de dados mediante consentimento explícito
-- Opções de exclusão de dados pessoais
-- Transparência no uso das informações
-- Políticas de privacidade claras  
-
-
 ## 🔗 Repositório Backend
  
 **[ConectEvento Backend](https://github.com/WesllyHn/conectevento-backend)**
 
 ## 📄 Documentação do Projeto
 
-📥 **[ConectEvento.pdf](https://github.com/user-attachments/files/21172179/ConectEvento.pdf)** - *Especificação técnica detalhada*
+📥 **[ConectEvento_final.pdf](https://github.com/user-attachments/files/23758077/ConectEvento_final.pdf)** - *Especificação técnica detalhada*
+
 
 ### 📚 Documentos Disponíveis
 - Especificação de Requisitos
