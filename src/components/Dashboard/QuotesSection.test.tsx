@@ -4,14 +4,12 @@ import userEvent from '@testing-library/user-event';
 import { QuotesSection } from './QuotesSection';
 import { quoteService } from '../../services/quoteService';
 
-// Mock do quoteService
 vi.mock('../../services/quoteService', () => ({
   quoteService: {
     updateBudget: vi.fn(),
   },
 }));
 
-// Mock completo do antd - usar vi.fn() diretamente
 vi.mock('antd', () => ({
   Button: ({ children, onClick, loading, disabled, ...props }: any) => {
     const childText = typeof children === 'string' ? children : 
@@ -41,7 +39,6 @@ vi.mock('antd', () => ({
   },
 }));
 
-// Mock do DataCard
 vi.mock('../Common', () => ({
   DataCard: ({ title, children, status }: any) => (
     <div data-testid="data-card">
@@ -56,7 +53,6 @@ vi.mock('../Common', () => ({
   ),
 }));
 
-// Mock dos ícones
 vi.mock('lucide-react', () => ({
   CheckCircle: () => null,
   XCircle: () => null,
@@ -116,12 +112,10 @@ describe('QuotesSection', () => {
     },
   ];
 
-  // Importar o mock do message após o vi.mock
   let messageSuccess: ReturnType<typeof vi.fn>;
   let messageError: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    // Importar dinamicamente para acessar os mocks
     const { message } = await import('antd');
     messageSuccess = message.success as ReturnType<typeof vi.fn>;
     messageError = message.error as ReturnType<typeof vi.fn>;
@@ -391,7 +385,6 @@ describe('QuotesSection', () => {
       expect(quoteService.updateBudget).toHaveBeenCalled();
     });
     
-    // Just verify it doesn't throw an error
     expect(messageSuccess).toHaveBeenCalled();
   });
 });

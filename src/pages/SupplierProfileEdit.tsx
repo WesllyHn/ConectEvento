@@ -43,12 +43,9 @@ export function SupplierProfileEdit() {
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // Função para aplicar máscara de CPF/CNPJ
   const formatCnpjCpf = (value: string) => {
-    // Remove tudo que não é dígito
     const numbers = value.replace(/\D/g, '');
 
-    // CPF: 000.000.000-00
     if (numbers.length <= 11) {
       return numbers
         .replace(/(\d{3})(\d)/, '$1.$2')
@@ -57,7 +54,6 @@ export function SupplierProfileEdit() {
         .replace(/(-\d{2})\d+$/, '$1');
     }
 
-    // CNPJ: 00.000.000/0000-00
     return numbers
       .replace(/(\d{2})(\d)/, '$1.$2')
       .replace(/(\d{3})(\d)/, '$1.$2')
@@ -74,15 +70,12 @@ export function SupplierProfileEdit() {
   const validateCnpjCpf = (value: string) => {
     const numbers = value.replace(/\D/g, '');
 
-    // Se está vazio, é válido (campo opcional)
     if (numbers.length === 0) return true;
 
-    // Se tem até 11 dígitos, valida como CPF (mínimo 11)
     if (numbers.length <= 11) {
       return numbers.length === 11;
     }
 
-    // Se tem mais de 11 dígitos, valida como CNPJ (deve ter 14)
     return numbers.length === 14;
   };
 
@@ -125,7 +118,6 @@ export function SupplierProfileEdit() {
     e.preventDefault();
     if (!user?.id) return;
 
-    // Validação do CNPJ/CPF
     if (profileData.cnpjOrCpf && !validateCnpjCpf(profileData.cnpjOrCpf)) {
       const numbers = profileData.cnpjOrCpf.replace(/\D/g, '');
       if (numbers.length > 0 && numbers.length < 11) {
@@ -229,8 +221,10 @@ export function SupplierProfileEdit() {
 
   const removePortfolioImage = async (imageId: string) => {
     try {
+      await uploadService.deleteImage(imageId);
+
       setPortfolioImages(prev => prev.filter(img => img.id !== imageId));
-      message.success('Imagem removida');
+      message.success('Imagem removida com sucesso');
     } catch (error) {
       console.error('Error removing image:', error);
       message.error('Erro ao remover imagem');
@@ -264,7 +258,6 @@ export function SupplierProfileEdit() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -297,8 +290,8 @@ export function SupplierProfileEdit() {
                   value={profileData.cnpjOrCpf}
                   onChange={handleCnpjCpfChange}
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all ${profileData.cnpjOrCpf && !validateCnpjCpf(profileData.cnpjOrCpf)
-                      ? 'border-red-300 focus:border-red-500'
-                      : 'border-gray-300 focus:border-blue-500'
+                    ? 'border-red-300 focus:border-red-500'
+                    : 'border-gray-300 focus:border-blue-500'
                     }`}
                   placeholder="000.000.000-00 ou 00.000.000/0000-00"
                   maxLength={18}
@@ -393,7 +386,6 @@ export function SupplierProfileEdit() {
             </div>
           </div>
 
-          {/* Services */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -455,7 +447,6 @@ export function SupplierProfileEdit() {
             )}
           </div>
 
-          {/* Portfolio */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -518,7 +509,6 @@ export function SupplierProfileEdit() {
             )}
           </div>
 
-          {/* Save Button */}
           <div className="flex justify-end gap-4 pt-4">
             <button
               type="button"

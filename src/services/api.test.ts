@@ -1,19 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { apiRequest, API_BASE_URL } from './api';
 
-// Mock do fetch global
 global.fetch = vi.fn();
 
 describe('api', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  // describe('API_BASE_URL', () => {
-  //   it('should be defined', () => {
-  //     expect(API_BASE_URL).toBeDefined();
-  //   });
-  // });
 
   describe('apiRequest', () => {
     it('should make a successful GET request', async () => {

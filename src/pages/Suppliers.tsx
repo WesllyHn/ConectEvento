@@ -147,7 +147,6 @@ export function Suppliers() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           {user && <button
             onClick={() => navigate('/dashboard')}
@@ -194,7 +193,6 @@ export function Suppliers() {
           />
         </div>
 
-        {/* Contador de Resultados */}
         {filteredSuppliers.length > 0 && (
           <div className="mb-6">
             <p className="text-gray-600">
@@ -216,7 +214,6 @@ export function Suppliers() {
                     className="group cursor-pointer h-full"
                   >
                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                      {/* Imagem de Capa */}
                       <div className="relative h-56 overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700">
                         {supplier.portfolioImageUrl ? (
                           <img
@@ -242,7 +239,6 @@ export function Suppliers() {
                           </div>
                         )}
                         
-                        {/* Badge de Disponibilidade */}
                         <div className="absolute top-3 right-3">
                           <div className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-lg ${
                             supplier.availability 
@@ -253,7 +249,6 @@ export function Suppliers() {
                           </div>
                         </div>
 
-                        {/* Badge de Preço */}
                         <div className="absolute bottom-3 left-3">
                           <div className={`px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg bg-gradient-to-r ${priceConfig.gradient}`}>
                             {priceConfig.label}
@@ -261,20 +256,16 @@ export function Suppliers() {
                         </div>
                       </div>
 
-                      {/* Conteúdo */}
                       <div className="p-6 flex-1 flex flex-col">
                         <div className="flex-1 space-y-3">
-                          {/* Nome */}
                           <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
                             {supplier.companyName || supplier.name}
                           </h3>
 
-                          {/* Descrição */}
                           <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
                             {supplier.description || 'Descrição não preenchida'}
                           </p>
 
-                          {/* Rating */}
                           <div className="flex items-center gap-2 py-2">
                             <div className="flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-lg">
                               <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
@@ -285,13 +276,11 @@ export function Suppliers() {
                             </span>
                           </div>
 
-                          {/* Localização */}
                           <div className="flex items-center gap-2 text-gray-600">
                             <MapPin className="w-4 h-4 text-blue-600" />
                             <span className="text-sm font-medium">{supplier.location}</span>
                           </div>
 
-                          {/* Serviços */}
                           <div className="flex flex-wrap gap-2 pt-2">
                             {(supplier.services || []).slice(0, 3).map((service: any) => (
                               <span 
@@ -309,7 +298,6 @@ export function Suppliers() {
                           </div>
                         </div>
 
-                        {/* Footer - Ver Perfil */}
                         <div className="mt-4 pt-4 border-t border-gray-100">
                           <div className="text-center">
                             <span className="text-blue-600 font-semibold text-sm group-hover:text-blue-700 transition-colors">

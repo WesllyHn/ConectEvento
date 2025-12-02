@@ -116,7 +116,6 @@ describe('ReviewCard', () => {
       <ReviewCard supplier={mockSupplierWithReview} onReview={mockOnReview} />
     );
 
-    // Verifica se o componente Rate está presente (Ant Design usa classes específicas)
     const rateComponent = container.querySelector('.ant-rate');
     expect(rateComponent).toBeInTheDocument();
   });
@@ -148,7 +147,6 @@ describe('ReviewCard', () => {
       <ReviewCard supplier={mockSupplierWithReview} onReview={mockOnReview} />
     );
 
-    // Tenta clicar no card (não deve haver botão de avaliar)
     const card = screen.getByText('DJ Premium Sound').closest('.ant-card');
     if (card) {
       await user.click(card);
@@ -174,7 +172,6 @@ describe('ReviewCard', () => {
     const avatar = container.querySelector('.ant-avatar');
     expect(avatar).toBeInTheDocument();
     
-    // Verifica se tem a classe de tamanho grande ou se tem style com width/height 64px
     const hasLargeClass = avatar?.classList.contains('ant-avatar-lg');
     const hasSize64 = avatar?.getAttribute('style')?.includes('64px');
     

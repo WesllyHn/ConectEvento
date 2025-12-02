@@ -4,11 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Login } from '../Login';
 
-// Mock mutável do login
 const mockLogin = vi.fn();
 const mockNavigate = vi.fn();
 
-// Mock do AuthContext
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
     login: mockLogin,
@@ -18,7 +16,6 @@ vi.mock('../../context/AuthContext', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-// Mock do react-router-dom
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -117,7 +114,6 @@ describe('Login', () => {
     const passwordInput = screen.getByLabelText(/Senha/i) as HTMLInputElement;
     expect(passwordInput.type).toBe('password');
 
-    // Clica no botão de mostrar senha (ícone de olho)
     const toggleButton = screen.getByRole('button', { hidden: true, name: '' });
     await user.click(toggleButton);
 

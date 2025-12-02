@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Building, MapPin, ArrowRight, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Building, ArrowRight, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { CityAutocomplete } from '../components/CityAutocomplete';
 
 export function Register() {
   const [userType, setUserType] = useState<'organizer' | 'supplier'>('organizer');
@@ -70,7 +71,6 @@ export function Register() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-purple-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background decorativo */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{
           backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
@@ -78,7 +78,6 @@ export function Register() {
         }}></div>
       </div>
 
-      {/* Gradient blobs decorativos */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full filter blur-3xl opacity-20 animate-pulse"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
 
@@ -112,7 +111,6 @@ export function Register() {
               </div>
             )}
 
-            {/* Seletor de tipo de usuário */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">
                 Você é:
@@ -157,7 +155,6 @@ export function Register() {
               </div>
             </div>
 
-            {/* Nome */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {userType === 'supplier' ? 'Nome do Responsável' : 'Nome Completo'}
@@ -176,7 +173,6 @@ export function Register() {
               </div>
             </div>
 
-            {/* Nome da Empresa (apenas para fornecedor) */}
             {userType === 'supplier' && (
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -197,7 +193,6 @@ export function Register() {
               </div>
             )}
 
-            {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Email
@@ -216,26 +211,14 @@ export function Register() {
               </div>
             </div>
 
-            {/* Localização */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Localização
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Cidade, Estado"
-                />
-              </div>
-            </div>
+            <CityAutocomplete
+              value={formData.location}
+              onChange={(city) => setFormData(prev => ({ ...prev, location: city }))}
+              required
+              placeholder="Digite sua cidade..."
+              label="Localização"
+            />
 
-            {/* Senha */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Senha
@@ -262,7 +245,6 @@ export function Register() {
               <p className="mt-1 text-xs text-gray-500">Mínimo de 6 caracteres</p>
             </div>
 
-            {/* Confirmar Senha */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Confirmar Senha
@@ -288,7 +270,6 @@ export function Register() {
               </div>
             </div>
 
-            {/* Botão de submit */}
             <button
               type="submit"
               disabled={isLoading}
@@ -312,7 +293,6 @@ export function Register() {
             </button>
           </form>
 
-          {/* Links adicionais */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Já tem uma conta?{' '}
@@ -323,7 +303,6 @@ export function Register() {
           </div>
         </div>
 
-        {/* Informação extra */}
         <div className="mt-6 text-center">
           <p className="text-sm text-blue-100">
             Ao criar uma conta, você concorda com nossos termos de uso

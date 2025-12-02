@@ -238,7 +238,6 @@ describe('SupplierProfileEdit', () => {
       expect(uploadService.uploadService.getSupplierImages).toHaveBeenCalledWith('supplier-1');
     });
 
-    // Verifica que as imagens foram carregadas
     expect(uploadService.uploadService.getImageUrl).toHaveBeenCalled();
   });
 

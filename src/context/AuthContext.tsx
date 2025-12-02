@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const createUserData = {
         name: userData.name!,
         email: userData.email!,
-        password: userData.password, // Você pode adicionar um campo de senha no formulário
+        password: userData.password,
         type: userData.type === 'organizer' ? 'ORGANIZER' as const : 'SUPPLIER' as const,
         companyName: userData.companyName,
         description: userData.description,
@@ -74,7 +74,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("createUserData", createUserData)
       const newUser = await userService.createUser(createUserData);
       
-      // Normalizar o tipo para o formato esperado pelo frontend
       const normalizedUser = {
         ...newUser,
         type: userData.type as 'organizer' | 'supplier'

@@ -1,6 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Star, MapPin, ArrowRight, Award, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Carousel } from 'antd';
+import type { CarouselRef } from 'antd/es/carousel';
 import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/userService';
 import { uploadService } from '../services/uploadService';
@@ -29,23 +31,25 @@ interface Supplier {
 }
 
 const SkeletonCard = () => (
-  <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-lg">
-    <div className="h-48 bg-gray-200 animate-pulse" />
-    <div className="p-6 space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
-        <div className="flex-1 space-y-2">
-          <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4" />
-          <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+  <div className="px-3">
+    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-lg">
+      <div className="h-48 bg-gray-200 animate-pulse" />
+      <div className="p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
+          <div className="flex-1 space-y-2">
+            <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4" />
+            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+          </div>
         </div>
-      </div>
-      <div className="space-y-2">
-        <div className="h-4 bg-gray-200 rounded animate-pulse" />
-        <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
-      </div>
-      <div className="flex gap-2">
-        <div className="h-6 w-20 bg-gray-200 rounded-lg animate-pulse" />
-        <div className="h-6 w-24 bg-gray-200 rounded-lg animate-pulse" />
+        <div className="space-y-2">
+          <div className="h-4 bg-gray-200 rounded animate-pulse" />
+          <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="flex gap-2">
+          <div className="h-6 w-20 bg-gray-200 rounded-lg animate-pulse" />
+          <div className="h-6 w-24 bg-gray-200 rounded-lg animate-pulse" />
+        </div>
       </div>
     </div>
   </div>
@@ -147,151 +151,153 @@ const SupplierCard = ({
   const currentIndex = currentImageIndex[supplier.id] || 0;
 
   return (
-    <div
-      className="group cursor-pointer"
-      onClick={() => onSupplierClick(supplier.id)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onSupplierClick(supplier.id);
-        }
-      }}
-      aria-label={`Ver perfil de ${supplierName}`}
-    >
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-        <div className="relative h-48 bg-gradient-to-br from-blue-500 to-blue-700">
-          {supplier.portfolioImages && supplier.portfolioImages.length > 0 ? (
-            <>
-              <img
-                src={supplier.portfolioImages[currentIndex]}
-                alt={`Portfolio ${currentIndex + 1} de ${supplierName}`}
-                className="w-full h-full object-cover transition-opacity duration-300"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = 'none';
-                  const placeholder = document.createElement('div');
-                  placeholder.className = 'w-full h-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center';
-                  placeholder.innerHTML = `<span class="text-7xl font-bold text-white">${firstLetter}</span>`;
-                  target.parentElement!.appendChild(placeholder);
-                }}
-              />
+    <div className="px-3">
+      <div
+        className="group cursor-pointer"
+        onClick={() => onSupplierClick(supplier.id)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onSupplierClick(supplier.id);
+          }
+        }}
+        aria-label={`Ver perfil de ${supplierName}`}
+      >
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden h-full flex flex-col transition-all duration-300 hover:-translate-y-1">
+          <div className="relative h-48 bg-gradient-to-br from-blue-500 to-blue-700">
+            {supplier.portfolioImages && supplier.portfolioImages.length > 0 ? (
+              <>
+                <img
+                  src={supplier.portfolioImages[currentIndex]}
+                  alt={`Portfolio ${currentIndex + 1} de ${supplierName}`}
+                  className="w-full h-full object-cover transition-opacity duration-300"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    target.style.display = 'none';
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'w-full h-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center';
+                    placeholder.innerHTML = `<span class="text-7xl font-bold text-white">${firstLetter}</span>`;
+                    target.parentElement!.appendChild(placeholder);
+                  }}
+                />
 
-              {supplier.portfolioImages.length > 1 && (
-                <>
-                  <button
-                    onClick={(e) => onPrevImage(supplier.id, supplier.portfolioImages!.length, e)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
-                    aria-label="Imagem anterior"
-                  >
-                    <ChevronLeft className="w-5 h-5 text-gray-800" />
-                  </button>
-                  <button
-                    onClick={(e) => onNextImage(supplier.id, supplier.portfolioImages!.length, e)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
-                    aria-label="Próxima imagem"
-                  >
-                    <ChevronRight className="w-5 h-5 text-gray-800" />
-                  </button>
+                {supplier.portfolioImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => onPrevImage(supplier.id, supplier.portfolioImages!.length, e)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
+                      aria-label="Imagem anterior"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-gray-800" />
+                    </button>
+                    <button
+                      onClick={(e) => onNextImage(supplier.id, supplier.portfolioImages!.length, e)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
+                      aria-label="Próxima imagem"
+                    >
+                      <ChevronRight className="w-5 h-5 text-gray-800" />
+                    </button>
 
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {supplier.portfolioImages.map((imageUrl, index) => (
-                      <button
-                        key={`${supplier.id}-image-${imageUrl}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onImageIndexChange(supplier.id, index);
-                        }}
-                        className={`w-2 h-2 rounded-full transition-all ${index === currentIndex
-                            ? 'bg-white w-6'
-                            : 'bg-white/60 hover:bg-white/80'
-                          }`}
-                        aria-label={`Ir para imagem ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                </>
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                      {supplier.portfolioImages.map((imageUrl, index) => (
+                        <button
+                          key={`${supplier.id}-image-${imageUrl}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onImageIndexChange(supplier.id, index);
+                          }}
+                          className={`w-2 h-2 rounded-full transition-all ${index === currentIndex
+                              ? 'bg-white w-6'
+                              : 'bg-white/60 hover:bg-white/80'
+                            }`}
+                          aria-label={`Ir para imagem ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <span className="text-7xl font-bold text-white">{firstLetter}</span>
+              </div>
+            )}
+
+            <div className="absolute top-3 right-3">
+              <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white shadow-lg">
+                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                <span className="font-bold text-gray-900">
+                  {supplier.rating ? supplier.rating.toFixed(1) : '0.0'}
+                </span>
+              </div>
+            </div>
+
+            <div className="absolute bottom-3 right-3">
+              <div className={`px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg bg-gradient-to-r ${priceConfig.gradient}`}>
+                {priceConfig.label}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 flex-1 flex flex-col">
+            <div className="flex-1 space-y-3">
+              <div className="flex items-center gap-3">
+                <AvatarDisplay
+                  portfolioImages={supplier.portfolioImages}
+                  avatar={supplier.avatar}
+                  supplierName={supplierName}
+                  firstLetter={firstLetter}
+                  getAvatarUrl={getAvatarUrl}
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                    {supplierName}
+                  </h3>
+                  {supplier.location && (
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                      <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-blue-600" />
+                      <span className="truncate">{supplier.location}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {supplier.description && (
+                <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+                  {supplier.description}
+                </p>
               )}
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <span className="text-7xl font-bold text-white">{firstLetter}</span>
-            </div>
-          )}
 
-          <div className="absolute top-3 right-3">
-            <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white shadow-lg">
-              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-              <span className="font-bold text-gray-900">
-                {supplier.rating ? supplier.rating.toFixed(1) : '0.0'}
-              </span>
-            </div>
-          </div>
-
-          <div className="absolute bottom-3 right-3">
-            <div className={`px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg bg-gradient-to-r ${priceConfig.gradient}`}>
-              {priceConfig.label}
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 flex-1 flex flex-col">
-          <div className="flex-1 space-y-3">
-            <div className="flex items-center gap-3">
-              <AvatarDisplay
-                portfolioImages={supplier.portfolioImages}
-                avatar={supplier.avatar}
-                supplierName={supplierName}
-                firstLetter={firstLetter}
-                getAvatarUrl={getAvatarUrl}
-              />
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
-                  {supplierName}
-                </h3>
-                {supplier.location && (
-                  <div className="flex items-center gap-1 text-sm text-gray-500">
-                    <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-blue-600" />
-                    <span className="truncate">{supplier.location}</span>
-                  </div>
-                )}
-              </div>
+              {supplier.services && supplier.services.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {supplier.services.slice(0, 2).map((serviceObj) => (
+                    <span
+                      key={`${supplier.id}-service-${serviceObj.service}`}
+                      className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full"
+                    >
+                      {serviceObj.service}
+                    </span>
+                  ))}
+                  {supplier.services.length > 2 && (
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+                      +{supplier.services.length - 2} mais
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
-            {supplier.description && (
-              <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
-                {supplier.description}
-              </p>
-            )}
-
-            {supplier.services && supplier.services.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-2">
-                {supplier.services.slice(0, 2).map((serviceObj) => (
-                  <span
-                    key={`${supplier.id}-service-${serviceObj.service}`}
-                    className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full"
-                  >
-                    {serviceObj.service}
-                  </span>
-                ))}
-                {supplier.services.length > 2 && (
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
-                    +{supplier.services.length - 2} mais
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">
-                {supplier.reviewCount || 0} {supplier.reviewCount === 1 ? 'avaliação' : 'avaliações'}
-              </span>
-              <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
-                <span>Ver perfil</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">
+                  {supplier.reviewCount || 0} {supplier.reviewCount === 1 ? 'avaliação' : 'avaliações'}
+                </span>
+                <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
+                  <span>Ver perfil</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
               </div>
             </div>
           </div>
@@ -309,6 +315,8 @@ export function FeaturedSuppliers() {
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState<Record<string, number>>({});
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const carouselRef = useRef<CarouselRef>(null);
 
   const loadFeaturedSuppliers = useCallback(async (currentRetry = 0) => {
     try {
@@ -337,8 +345,7 @@ export function FeaturedSuppliers() {
 
       const topSuppliers = suppliersWithImages
         .filter((s: Supplier) => s.rating !== null && s.rating >= 0)
-        .sort((a: Supplier, b: Supplier) => (b.rating || 0) - (a.rating || 0))
-        .slice(0, 3);
+        .sort((a: Supplier, b: Supplier) => (b.rating || 0) - (a.rating || 0));
 
       setSuppliers(topSuppliers);
 
@@ -428,6 +435,28 @@ export function FeaturedSuppliers() {
     }));
   }, []);
 
+  const getSlidesToShow = () => {
+    if (typeof window === 'undefined') return 3;
+    if (window.innerWidth < 640) return 1;
+    if (window.innerWidth < 768) return 2;
+    return 3;
+  };
+
+  const [slidesToShow, setSlidesToShow] = useState(getSlidesToShow());
+
+  useEffect(() => {
+    const handleResize = () => {
+      setSlidesToShow(getSlidesToShow());
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const maxSlide = Math.max(0, suppliers.length - slidesToShow);
+  const canGoPrev = currentSlide > 0;
+  const canGoNext = currentSlide < maxSlide;
+
   if (loading) {
     return (
       <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
@@ -437,11 +466,20 @@ export function FeaturedSuppliers() {
             <div className="h-10 w-96 max-w-full bg-gray-200 rounded mx-auto mb-4 animate-pulse" />
             <div className="h-6 w-full max-w-2xl bg-gray-200 rounded mx-auto animate-pulse" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {[1, 2, 3].map((i) => (
+          <Carousel
+            autoplay
+            dots={false}
+            slidesToShow={3}
+            responsive={[
+              { breakpoint: 1024, settings: { slidesToShow: 3 } },
+              { breakpoint: 768, settings: { slidesToShow: 2 } },
+              { breakpoint: 640, settings: { slidesToShow: 1 } }
+            ]}
+          >
+            {[1, 2, 3, 4].map((i) => (
               <SkeletonCard key={i} />
             ))}
-          </div>
+          </Carousel>
           {retryCount > 0 && (
             <div className="text-center mt-8">
               <p className="text-sm text-gray-500">
@@ -515,19 +553,90 @@ export function FeaturedSuppliers() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {suppliers.map((supplier) => (
-            <SupplierCard
-              key={supplier.id}
-              supplier={supplier}
-              currentImageIndex={currentImageIndex}
-              onSupplierClick={handleSupplierClick}
-              onPrevImage={handlePrevImage}
-              onNextImage={handleNextImage}
-              onImageIndexChange={handleImageIndexChange}
-              getAvatarUrl={getAvatarUrl}
-            />
-          ))}
+        <div className="relative">
+          {suppliers.length > slidesToShow && (
+            <>
+              <button
+                onClick={() => {
+                  carouselRef.current?.prev();
+                  setCurrentSlide(prev => Math.max(0, prev - 1));
+                }}
+                disabled={!canGoPrev}
+                className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full shadow-2xl flex items-center justify-center transition-all ${
+                  canGoPrev
+                    ? 'bg-white hover:bg-blue-50 text-gray-800 hover:text-blue-600 cursor-pointer'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+                }`}
+                aria-label="Anterior"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                onClick={() => {
+                  carouselRef.current?.next();
+                  setCurrentSlide(prev => Math.min(maxSlide, prev + 1));
+                }}
+                disabled={!canGoNext}
+                className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full shadow-2xl flex items-center justify-center transition-all ${
+                  canGoNext
+                    ? 'bg-white hover:bg-blue-50 text-gray-800 hover:text-blue-600 cursor-pointer'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+                }`}
+                aria-label="Próximo"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </>
+          )}
+
+          <Carousel
+            ref={carouselRef}
+            autoplay={suppliers.length > slidesToShow}
+            autoplaySpeed={5000}
+            dots={{
+              className: "custom-dots"
+            }}
+            slidesToShow={3}
+            slidesToScroll={1}
+            infinite={false}
+            beforeChange={(_, next) => setCurrentSlide(next)}
+            responsive={[
+              {
+                breakpoint: 1024,
+                settings: {
+                  slidesToShow: 3,
+                  slidesToScroll: 1
+                }
+              },
+              {
+                breakpoint: 768,
+                settings: {
+                  slidesToShow: 2,
+                  slidesToScroll: 1
+                }
+              },
+              {
+                breakpoint: 640,
+                settings: {
+                  slidesToShow: 1,
+                  slidesToScroll: 1
+                }
+              }
+            ]}
+          >
+            {suppliers.map((supplier) => (
+              <SupplierCard
+                key={supplier.id}
+                supplier={supplier}
+                currentImageIndex={currentImageIndex}
+                onSupplierClick={handleSupplierClick}
+                onPrevImage={handlePrevImage}
+                onNextImage={handleNextImage}
+                onImageIndexChange={handleImageIndexChange}
+                getAvatarUrl={getAvatarUrl}
+              />
+            ))}
+          </Carousel>
         </div>
       </div>
     </section>

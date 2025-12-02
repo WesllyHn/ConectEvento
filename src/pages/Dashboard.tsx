@@ -24,7 +24,6 @@ const QuotesExpandIcon = ({ isActive }: { isActive?: boolean }) =>
   isActive ? <ChevronUp className="w-5 h-5 text-purple-600" /> : <ChevronDown className="w-5 h-5 text-gray-400" />;
 
 
-// Componente de Stat Card customizado com cores
 const ColoredStatCard = ({
   title,
   value,
@@ -274,7 +273,6 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold leading-tight bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent">
             Dashboard do Organizador
@@ -283,7 +281,6 @@ export function Dashboard() {
           <p className="text-gray-600 mt-2 text-lg">Bem-vindo de volta, <span className="font-semibold text-blue-600">{user?.name}</span>!</p>
         </div>
 
-        {/* Stats Cards */}
         <Row gutter={[16, 16]} className="mb-8">
           <Col xs={24} sm={12} lg={6}>
             <ColoredStatCard
@@ -324,7 +321,6 @@ export function Dashboard() {
         </Row>
 
         <Row gutter={[16, 16]}>
-          {/* Ações Rápidas */}
           <Col xs={24} lg={8}>
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
@@ -382,9 +378,7 @@ export function Dashboard() {
             </div>
           </Col>
 
-          {/* Eventos e Orçamentos */}
           <Col xs={24} lg={16}>
-            {/* Meus Eventos */}
             <Collapse
               defaultActiveKey={['events']}
               className="mb-6 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
@@ -450,7 +444,6 @@ export function Dashboard() {
               </Panel>
             </Collapse>
 
-            {/* Solicitações de Orçamento */}
             <Collapse
               defaultActiveKey={['quotes']}
               className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
@@ -483,7 +476,6 @@ export function Dashboard() {
         </Row>
       </div>
 
-      {/* Modal Criar Evento */}
       <Modal
         title={<span className="text-xl font-bold">Criar Novo Evento</span>}
         open={showCreateEventModal}
@@ -676,7 +668,6 @@ export function Dashboard() {
         </Form>
       </Modal>
 
-      {/* Roadmap Modal */}
       {selectedEvent && (
         <RoadmapModal
           open={showRoadmapModal}

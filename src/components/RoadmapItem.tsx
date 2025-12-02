@@ -31,7 +31,6 @@ const statusConfig = {
   },
 } as const;
 
-// Normaliza o status para o formato correto
 const normalizeStatus = (status: string): keyof typeof statusConfig => {
   const statusMap: Record<string, keyof typeof statusConfig> = {
     'Planejando': 'PLANNING',
@@ -54,7 +53,6 @@ export function RoadmapItemCard({ item, onStatusChange, onDelete, onSearch }: Ro
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4 hover:shadow-lg transition-shadow duration-200">
-      {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-semibold border ${config.color}`}>
@@ -76,12 +74,10 @@ export function RoadmapItemCard({ item, onStatusChange, onDelete, onSearch }: Ro
         </Tooltip>
       </div>
 
-      {/* Título */}
       <h3 className="text-lg font-bold text-gray-900 mb-3">
         {item.title}
       </h3>
 
-      {/* Descrição */}
       {item.description && (
         <div className="flex gap-2 mb-3 text-gray-600 text-sm">
           <FileTextOutlined className="text-blue-500 mt-0.5" />
@@ -89,7 +85,6 @@ export function RoadmapItemCard({ item, onStatusChange, onDelete, onSearch }: Ro
         </div>
       )}
 
-      {/* Preço */}
       {item.price != null && (
         <div className="inline-flex items-center gap-2 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200 mb-4">
           <DollarOutlined className="text-emerald-600" />
@@ -99,7 +94,6 @@ export function RoadmapItemCard({ item, onStatusChange, onDelete, onSearch }: Ro
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
         <Select
           value={normalizedStatus}

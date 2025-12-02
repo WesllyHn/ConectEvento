@@ -6,7 +6,6 @@ import { Quotes } from '../Quotes';
 import { useAuth } from '../../context/AuthContext';
 import { quoteService } from '../../services/quoteService';
 
-// Mock das dependências
 vi.mock('../../context/AuthContext');
 vi.mock('../../services/quoteService');
 vi.mock('react-router-dom', async () => {

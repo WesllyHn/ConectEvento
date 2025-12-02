@@ -134,7 +134,6 @@ const QuoteCard = ({
   );
 };
 
-// Componente de Stat Card colorido
 const ColoredStatCard = ({
   title,
   value,
@@ -336,7 +335,6 @@ export function SupplierDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold leading-tight bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent">
             Dashboard do Fornecedor
@@ -346,7 +344,6 @@ export function SupplierDashboard() {
           </p>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <ColoredStatCard
             title="Total de Solicitações"
@@ -379,7 +376,6 @@ export function SupplierDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
@@ -425,13 +421,11 @@ export function SupplierDashboard() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Solicitações de Orçamento</h2>
 
-                {/* Tabs */}
                 <div className="flex space-x-2 bg-gray-100 p-1.5 rounded-xl">
                   <button
                     onClick={() => setActiveTab('PENDING')}
@@ -466,14 +460,12 @@ export function SupplierDashboard() {
                 </div>
               </div>
 
-              {/* Quote Requests */}
               {renderQuotesContent()}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Response Modal */}
       {selectedQuote && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">

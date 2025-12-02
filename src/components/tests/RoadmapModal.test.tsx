@@ -5,7 +5,6 @@ import { RoadmapModal } from '../RoadmapModal';
 import * as roadmapService from '../../services/roadmapService';
 import { RoadmapItem } from '../../services/roadmapService';
 
-// Mock do serviço de roadmap
 vi.mock('../../services/roadmapService', () => ({
   roadmapService: {
     getRoadmapByEventId: vi.fn(),
@@ -96,15 +95,12 @@ describe('RoadmapModal', () => {
     render(<RoadmapModal {...defaultProps} />);
 
     await waitFor(() => {
-      // Verificar pelo texto específico de cada estatística
       expect(screen.getByText('Total')).toBeInTheDocument();
       
-      // Verificar os valores numéricos - pegar o elemento pai que contém tudo
       const totalElement = screen.getByText('Total').parentElement;
       expect(totalElement?.textContent).toContain('3');
       expect(totalElement?.textContent).toContain('Total');
       
-      // Verificar as outras estatísticas usando getAllByText para labels duplicadas
       const planejandoElements = screen.getAllByText('Planejando');
       expect(planejandoElements.length).toBeGreaterThan(0);
       
@@ -232,7 +228,6 @@ describe('RoadmapModal', () => {
     await user.type(screen.getByPlaceholderText('Ex: Buffet, DJ, Decoração...'), 'DJ Profissional');
     await user.type(screen.getByPlaceholderText('Descreva os detalhes do item...'), 'Som e iluminação profissional');
 
-    // Simplificar o teste - apenas verificar se o botão de submit existe
     const submitButtons = screen.getAllByText('Adicionar');
     expect(submitButtons.length).toBeGreaterThan(0);
   });
@@ -245,7 +240,6 @@ describe('RoadmapModal', () => {
       expect(screen.getByText('Buffet Premium')).toBeInTheDocument();
     });
 
-    // Buscar o select de status usando querySelector
     const statusSelect = container.querySelector('.ant-select');
     if (statusSelect) {
       await user.click(statusSelect);
@@ -285,17 +279,14 @@ describe('RoadmapModal', () => {
 
     const { container } = render(<RoadmapModal {...defaultProps} />);
 
-    // Aguardar um pouco e verificar se o loading aparece
     const spinElement = container.querySelector('.ant-spin');
     
-    // Se não encontrar o spin, pelo menos verificar que os itens ainda não foram carregados
     if (!spinElement) {
       expect(screen.queryByText('Buffet Premium')).not.toBeInTheDocument();
     } else {
       expect(spinElement).toBeInTheDocument();
     }
 
-    // Aguardar os itens carregarem
     await waitFor(() => {
       expect(screen.getByText('Buffet Premium')).toBeInTheDocument();
     });
@@ -354,10 +345,8 @@ describe('RoadmapModal', () => {
     const cancelButton = screen.getByText('Cancelar');
     await user.click(cancelButton);
 
-    // Verificar se o modal de adicionar foi fechado checando se o formulário não está mais visível
     await waitFor(() => {
       const addItemModals = container.querySelectorAll('.ant-modal');
-      // Deve ter apenas 1 modal aberto (o principal), não 2 (principal + adicionar)
       expect(addItemModals.length).toBeLessThanOrEqual(1);
     }, { timeout: 3000 });
   });

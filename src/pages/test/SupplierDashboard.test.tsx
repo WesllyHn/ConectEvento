@@ -6,7 +6,6 @@ import { SupplierDashboard } from '../SupplierDashboard';
 import { useAuth } from '../../context/AuthContext';
 import { quoteService } from '../../services/quoteService';
 
-// Mock das dependências
 vi.mock('../../context/AuthContext');
 vi.mock('../../services/quoteService');
 vi.mock('react-router-dom', async () => {
@@ -212,12 +211,10 @@ describe('SupplierDashboard', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      // Verifica Pendente na aba inicial
       await waitFor(() => {
         expect(screen.getByText('Pendente')).toBeInTheDocument();
       });
 
-      // Muda para a aba Respondidas
       const respondedTab = screen.getByText(/Respondidas \(1\)/);
       await user.click(respondedTab);
 
@@ -225,7 +222,6 @@ describe('SupplierDashboard', () => {
         expect(screen.getByText('Respondido')).toBeInTheDocument();
       });
 
-      // Muda para a aba Todas
       const allTab = screen.getByText(/Todas \(3\)/);
       await user.click(allTab);
 
@@ -361,7 +357,6 @@ describe('SupplierDashboard', () => {
         expect(screen.getByText('Responder Solicitação')).toBeInTheDocument();
       });
 
-      // Procura pelo botão X através da classe CSS
       const modal = screen.getByText('Responder Solicitação').closest('.fixed');
       const xButton = modal?.querySelector('button.hover\\:bg-gray-100');
 
@@ -392,7 +387,6 @@ describe('SupplierDashboard', () => {
       await user.clear(priceInput);
       await user.type(priceInput, '5000');
 
-      // O formato aceita R$ 50,00 devido à lógica de formatação de moeda
       expect(priceInput.value).toMatch(/R\$\s*50,00/);
     });
 
@@ -476,7 +470,6 @@ describe('SupplierDashboard', () => {
         expect(screen.getByText('Enviando...')).toBeInTheDocument();
       });
 
-      // Resolver a promise para cleanup
       if (resolveUpdate) resolveUpdate({});
     });
 

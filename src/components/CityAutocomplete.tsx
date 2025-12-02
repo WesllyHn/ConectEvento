@@ -1,4 +1,3 @@
-// src/components/CityAutocomplete.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, X } from 'lucide-react';
 import { locationService } from '../utils/LocationResult';
@@ -26,12 +25,10 @@ export function CityAutocomplete({
   const [isSearchingCity, setIsSearchingCity] = useState(false);
   const cityInputRef = useRef<HTMLDivElement>(null);
 
-  // Atualizar cityQuery quando value mudar externamente
   useEffect(() => {
     setCityQuery(value);
   }, [value]);
 
-  // Buscar cidades quando o usuário digita
   useEffect(() => {
     const searchCities = async () => {
       if (cityQuery.length < 2) {
@@ -55,7 +52,6 @@ export function CityAutocomplete({
     return () => clearTimeout(timeoutId);
   }, [cityQuery]);
 
-  // Fechar sugestões ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (cityInputRef.current && !cityInputRef.current.contains(event.target as Node)) {
@@ -71,8 +67,6 @@ export function CityAutocomplete({
     const inputValue = e.target.value;
     setCityQuery(inputValue);
     
-    // Se o input estiver vazio, limpa o valor
-    // Senão, mantém o último valor válido até selecionar outro
     if (!inputValue) {
       onChange('');
     }
@@ -82,9 +76,7 @@ export function CityAutocomplete({
 
   const handleFocus = () => {
     setShowSuggestions(true);
-    // Se já tem um valor e menos de 2 caracteres foram digitados, busca pelo valor atual
     if (cityQuery.length >= 2) {
-      // Força uma nova busca
       setCitySuggestions([]);
     }
   };
@@ -173,7 +165,6 @@ export function CityAutocomplete({
           </button>
         )}
         
-        {/* Dropdown de sugestões */}
         {showSuggestions && cityQuery.length >= 2 && (
           <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
             {renderSuggestionsContent()}

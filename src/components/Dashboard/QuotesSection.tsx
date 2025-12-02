@@ -26,7 +26,7 @@ interface Quote {
 interface QuotesSectionProps {
   quotes: Quote[];
   onViewAll?: () => void;
-  onQuoteUpdate?: () => void; // Callback para recarregar os dados
+  onQuoteUpdate?: () => void;
 }
 
 const getStatusText = (status: Quote['status']): string => {
@@ -70,7 +70,6 @@ export function QuotesSection({ quotes, onViewAll, onQuoteUpdate }: QuotesSectio
           : 'Orçamento rejeitado com sucesso!'
       );
       
-      // Recarrega os dados
       if (onQuoteUpdate) {
         onQuoteUpdate();
       }
@@ -119,7 +118,6 @@ export function QuotesSection({ quotes, onViewAll, onQuoteUpdate }: QuotesSectio
                 </div>
               )}
 
-              {/* Botões de Aceitar/Rejeitar - Apenas para orçamentos respondidos */}
               {quote.status === 'RESPONDED' && (
                 <div className="flex gap-2 mt-4">
                   <Button

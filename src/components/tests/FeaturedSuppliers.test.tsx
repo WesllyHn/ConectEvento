@@ -8,7 +8,6 @@ import * as uploadService from '../../services/uploadService';
 const mockNavigate = vi.fn();
 const mockIsAuthenticated = { value: false };
 
-// Mock do react-router-dom
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -17,7 +16,6 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-// Mock do AuthContext
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
     isAuthenticated: mockIsAuthenticated.value,
@@ -28,7 +26,6 @@ vi.mock('../../context/AuthContext', () => ({
   }),
 }));
 
-// Mock dos serviços
 vi.mock('../../services/userService', () => ({
   userService: {
     getSuppliers: vi.fn(),
@@ -41,7 +38,6 @@ vi.mock('../../services/uploadService', () => ({
   },
 }));
 
-// Importa o componente DEPOIS dos mocks
 import { FeaturedSuppliers } from '../FeaturedSuppliers';
 
 describe('FeaturedSuppliers', () => {
@@ -115,7 +111,6 @@ describe('FeaturedSuppliers', () => {
   it('should render loading state initially', () => {
     renderComponent();
 
-    // Verifica se os skeletons estão sendo renderizados
     const { container } = render(
       <MemoryRouter>
         <FeaturedSuppliers />

@@ -137,7 +137,6 @@ export function Quotes() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate('/dashboard')}
@@ -219,7 +218,6 @@ export function Quotes() {
                     )}
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-3 mt-4 pt-4 border-t border-gray-100">
                     {isSupplier && budget.status === 'PENDING' && (
                       <Button
@@ -293,7 +291,6 @@ export function Quotes() {
         )}
       </div>
 
-      {/* Modal */}
       <Modal
         title={<span className="text-xl font-bold">Responder Solicitação</span>}
         open={showResponseModal}

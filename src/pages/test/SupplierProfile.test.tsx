@@ -109,10 +109,8 @@ describe('SupplierProfile', () => {
     renderComponent();
 
     await waitFor(() => {
-      // nome exibido é o companyName
       expect(screen.getByText('Test Company')).toBeInTheDocument();
 
-      // localização pode aparecer em mais de um lugar
       const locations = screen.getAllByText('São Paulo, SP');
       expect(locations.length).toBeGreaterThan(0);
 

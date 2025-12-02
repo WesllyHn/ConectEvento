@@ -8,7 +8,6 @@ import * as eventService from '../services/eventService';
 import { RoadmapItem } from '../services/roadmapService';
 import { Event } from '../services/eventService';
 
-// Mock dos serviços
 vi.mock('../services/roadmapService');
 vi.mock('../services/eventService');
 
@@ -173,7 +172,6 @@ describe('EventRoadmap', () => {
     const addButton = screen.getByRole('button', { name: /adicionar item/i, hidden: true });
     await user.click(addButton);
 
-    // Não espere pelo modal - apenas verifique se o botão foi clicado
     expect(addButton).toBeInTheDocument();
   }, 10000);
 

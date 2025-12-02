@@ -45,9 +45,8 @@ describe('RoadmapStats', () => {
         onFilterChange={mockOnFilterChange}
       />
     );
-  // Corrigido: pega os cards por '.rounded-2xl'h
     const cards = container.querySelectorAll('.rounded-2xl');
-    // Planejando é o segundo card no array
+
     expect(cards[1].classList.contains('scale-105')).toBe(true);
     expect(cards[1].classList.contains('border-white')).toBe(true);
   });
@@ -61,7 +60,7 @@ describe('RoadmapStats', () => {
         onFilterChange={mockOnFilterChange}
       />
     );
-    // Busca o botão "Planejando":
+
     const planningCard = screen.getByText('Planejando').closest('button');
     fireEvent.click(planningCard!);
     expect(mockOnFilterChange).toHaveBeenCalledWith('PLANNING');
@@ -75,9 +74,9 @@ describe('RoadmapStats', () => {
         onFilterChange={mockOnFilterChange}
       />
     );
-    // Tem ✓ Filtro ativo
+    
     const activeTexts = screen.getAllByText(/Filtro ativo/);
     expect(activeTexts).toHaveLength(1);
-    expect(activeTexts[0].textContent).toContain('✓'); // Adicional: confere o check
+    expect(activeTexts[0].textContent).toContain('✓');
   });
 });

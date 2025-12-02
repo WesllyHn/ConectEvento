@@ -69,14 +69,12 @@ export function SupplierProfile() {
       const userData = await userService.getUserById(id);
       setSupplier(userData);
       
-      // Carrega as imagens do portfolio
       const images = await uploadService.getSupplierImages(id);
       const imageUrls = images.map(img => uploadService.getImageUrl(img.id));
       setPortfolioImages(imageUrls);
       
-      // Define o avatar como a PRIMEIRA imagem do portfolio, ou o avatar do usuário como fallback
       if (imageUrls.length > 0) {
-        setAvatarUrl(imageUrls[imageUrls.length - 1]); // Primeira imagem
+        setAvatarUrl(imageUrls[imageUrls.length - 1]);
       } else if (userData.avatar) {
         setAvatarUrl(userData.avatar);
       }
@@ -297,7 +295,6 @@ export function SupplierProfile() {
     <>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Botão Voltar */}
           <button
             onClick={() => navigate(getBackButtonPath())}
             className="flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-6 transition-colors group"
@@ -309,9 +306,7 @@ export function SupplierProfile() {
           </button>
 
           <Row gutter={[24, 24]}>
-            {/* Coluna Principal */}
             <Col xs={24} lg={16}>
-              {/* Card Principal */}
               <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
                 <div className="flex flex-col sm:flex-row items-start gap-6 mb-6">
                   {avatarUrl ? (
@@ -363,7 +358,6 @@ export function SupplierProfile() {
                   </div>
                 </div>
 
-                {/* Stats */}
                 <Row gutter={16} className="mb-6">
                   <Col xs={24} sm={8}>
                     <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200">
@@ -388,7 +382,6 @@ export function SupplierProfile() {
                   </Col>
                 </Row>
 
-                {/* Descrição */}
                 {supplier.description && (
                   <div className="pt-6 border-t border-gray-100">
                     <p className="text-gray-700 text-base leading-relaxed">{supplier.description}</p>
@@ -396,7 +389,6 @@ export function SupplierProfile() {
                 )}
               </div>
 
-              {/* Serviços */}
               {services.length > 0 && (
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -416,7 +408,6 @@ export function SupplierProfile() {
                 </div>
               )}
 
-              {/* Portfólio */}
               {portfolioImages.length > 0 && (
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-4">Portfólio</h2>
@@ -444,7 +435,6 @@ export function SupplierProfile() {
                 </div>
               )}
 
-              {/* Avaliações */}
               <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <MessageSquare className="w-6 h-6 text-blue-600" />
@@ -454,7 +444,6 @@ export function SupplierProfile() {
               </div>
             </Col>
 
-            {/* Sidebar */}
             <Col xs={24} lg={8}>
               <div className="sticky top-8">
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
@@ -512,7 +501,6 @@ export function SupplierProfile() {
         </div>
       </div>
 
-      {/* Modal Orçamento */}
       <Modal
         title={<span className="text-xl font-bold">Solicitar Orçamento</span>}
         open={showQuoteModal}
@@ -567,7 +555,6 @@ export function SupplierProfile() {
         </Form>
       </Modal>
 
-      {/* Modal Imagem */}
       <Modal
         open={showImageModal}
         onCancel={() => setShowImageModal(false)}
