@@ -25,10 +25,10 @@ export function Login() {
       if (success) {
         navigate(userType === 'organizer' ? '/dashboard' : '/supplier-dashboard');
       } else {
-        setError('Email ou senha incorretos');
+        setError('Email ou senha incorretos. Verifique suas credenciais e tente novamente.');
       }
-    } catch {
-      setError('Erro ao fazer login. Tente novamente.');
+    } catch (error: any) {
+      setError(error.message || 'Erro ao fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);
     }

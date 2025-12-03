@@ -61,13 +61,39 @@ class UserService {
     });
   }
 
-  async loginUser(credentials: LoginCredentials): Promise<User> {
+  async loginUser(credentials: LoginCredentials): Promise<{ success: boolean; data?: { user: User; token: string }; message?: string }> {
     const params = new URLSearchParams({
       email: credentials.email,
       password: credentials.password,
     });
     
-    return apiRequest(`/users/login/?${params.toString()}`);
+    try {
+      const response = await apiRequest(`/users/login/?${params.toString()}`);
+      
+      // A resposta agora vem no formato: { success: true, message: "...", data: { user, token } }
+      if (response.success && response.data && response.data.user && response.data.token) {
+        return {
+          success: true,
+          data: {
+            user: response.data.user,
+            token: response.data.token,
+          },
+          message: response.message,
+        };
+      }
+      
+      // Se success for false ou não houver data
+      return {
+        success: false,
+        message: response.message || 'Erro ao fazer login',
+      };
+    } catch (error: any) {
+      // Tratar erros da API
+      return {
+        success: false,
+        message: error.message || 'Erro ao fazer login',
+      };
+    }
   }
 
   async getSuppliers(): Promise<any[]> {
