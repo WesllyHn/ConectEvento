@@ -255,7 +255,16 @@ describe('userService', () => {
         password: 'password123',
       };
 
-      vi.mocked(api.apiRequest).mockResolvedValue(mockOrganizer);
+      const mockResponse = {
+        success: true,
+        message: 'Login successful',
+        data: {
+          user: mockOrganizer,
+          token: 'mock-token-123',
+        },
+      };
+
+      vi.mocked(api.apiRequest).mockResolvedValue(mockResponse);
 
       const result = await userService.loginUser(credentials);
 
@@ -265,7 +274,9 @@ describe('userService', () => {
       });
 
       expect(api.apiRequest).toHaveBeenCalledWith(`/users/login/?${params.toString()}`);
-      expect(result).toEqual(mockOrganizer);
+      expect(result.success).toBe(true);
+      expect(result.data?.user).toEqual(mockOrganizer);
+      expect(result.data?.token).toBe('mock-token-123');
     });
 
     it('should handle invalid credentials', async () => {
@@ -276,7 +287,10 @@ describe('userService', () => {
 
       vi.mocked(api.apiRequest).mockRejectedValue(new Error('Invalid credentials'));
 
-      await expect(userService.loginUser(credentials)).rejects.toThrow('Invalid credentials');
+      const result = await userService.loginUser(credentials);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Invalid credentials');
     });
   });
 

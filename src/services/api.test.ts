@@ -105,6 +105,7 @@ describe('api', () => {
       const mockResponse = {
         ok: false,
         status: 400,
+        json: vi.fn().mockRejectedValue(new Error('Failed to parse JSON')),
       };
 
       vi.mocked(fetch).mockResolvedValue(mockResponse as any);

@@ -8,18 +8,31 @@ interface AuthContextType {
   register: (userData: Partial<User>) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Verificar se há token e usuário salvos ao carregar
+    const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    
+    if (savedToken && savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Erro ao carregar usuário do localStorage:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
+    
+    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string, userType: 'organizer' | 'supplier'): Promise<boolean> => {
@@ -28,13 +41,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await userService.loginUser(credentials);
       console.log('Login response:', response);
 
-      const userData = response.data;
+      // Verificar se o login foi bem-sucedido
+      if (!response.success || !response.data) {
+        return false;
+      }
 
+      const { user: userData, token } = response.data;
+
+      // Validar tipo de usuário
       const normalizedUserType = userData.type.toLowerCase();
       if (normalizedUserType !== userType) {
         return false;
       }
 
+      // Normalizar dados do usuário
       const normalizedUser: User = {
         id: userData.id,
         name: userData.name,
@@ -50,8 +70,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         availability: userData.availability,
       };
 
-      setUser(normalizedUser);
+      // Armazenar token e usuário
+      localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(normalizedUser));
+      setUser(normalizedUser);
+      
       return true;
     } catch (error) {
       console.error('Login error:', error);
@@ -90,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
   };
 
@@ -98,8 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     register,
     logout,
-    isAuthenticated: !!user
-  }), [user]);
+    isAuthenticated: !!user,
+    loading
+  }), [user, loading]);
 
   return (
     <AuthContext.Provider value={contextValue}>
