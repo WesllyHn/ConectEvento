@@ -3,11 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { User, LogOut, Menu, X, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Dropdown } from 'antd';
-import logo from '../assets/logo.png';
-import logo2 from '../assets/logo2.png';
 import logo3 from '../assets/logo3.png';
-import logo4 from '../assets/logo4.png';
-
 export function Header() {
   const { user, logout, isAuthenticated } = useAuth();
   const location = useLocation();
@@ -49,7 +45,7 @@ export function Header() {
             <div className="relative">
               <div className="absolute inset-0 rounded-xl blur opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
               <div className="relative w-11 h-11 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 group-hover:rotate-3">
-                <img src={logo4} className="rounded-lg"/>
+                <img src={logo3} className="rounded-lg"/>
               </div>
             </div>
             <div className="flex flex-col">
