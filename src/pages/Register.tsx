@@ -42,7 +42,7 @@ export function Register() {
     setIsLoading(true);
 
     try {
-      const success = await register({
+      const result = await register({
         name: formData.name,
         email: formData.email,
         type: userType,
@@ -51,12 +51,14 @@ export function Register() {
         location: formData.location
       });
 
-      if (success) {
+      if (result.success) {
         await login(formData.email, formData.password, userType);
         navigate(userType === 'organizer' ? '/dashboard' : '/supplier-dashboard');
+      } else {
+        setError(result.message || 'Erro ao criar conta. Tente novamente.');
       }
-    } catch {
-      setError('Erro ao criar conta. Tente novamente.');
+    } catch (error: any) {
+      setError(error.message || 'Erro ao criar conta. Tente novamente.');
     } finally {
       setIsLoading(false);
     }

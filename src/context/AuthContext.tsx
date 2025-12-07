@@ -5,7 +5,7 @@ import { userService, LoginCredentials } from '../services';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string, userType: 'organizer' | 'supplier') => Promise<boolean>;
-  register: (userData: Partial<User>) => Promise<boolean>;
+  register: (userData: Partial<User>) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
@@ -60,6 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: userData.name,
         email: userData.email,
         type: userType,
+        password: password, // Senha não é armazenada no localStorage, mas é necessária no tipo
+        createdAt: userData.createdAt || new Date().toISOString(),
         avatar: userData.avatar,
         companyName: userData.companyName,
         description: userData.description,
@@ -82,8 +84,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (userData: Partial<User>): Promise<boolean> => {
+  const register = async (userData: Partial<User>): Promise<{ success: boolean; message?: string }> => {
     try {
+      
+      if (!userData.password) {
+        return { success: false, message: 'Senha é obrigatória' };
+      }
       
       const createUserData = {
         name: userData.name!,
@@ -97,17 +103,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("createUserData", createUserData)
       const newUser = await userService.createUser(createUserData);
       
-      const normalizedUser = {
+      const normalizedUser: User = {
         ...newUser,
-        type: userData.type as 'organizer' | 'supplier'
+        type: userData.type as 'organizer' | 'supplier',
+        password: userData.password,
+        createdAt: newUser.createdAt || new Date().toISOString(),
       };
       
       setUser(normalizedUser);
       localStorage.setItem('user', JSON.stringify(normalizedUser));
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error('Registration error:', error);
-      return false;
+      return { 
+        success: false, 
+        message: error.message || 'Erro ao criar conta. Tente novamente.' 
+      };
     }
   };
 

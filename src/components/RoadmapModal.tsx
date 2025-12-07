@@ -5,7 +5,6 @@ import {
   Form,
   Input,
   Select,
-  InputNumber,
   message,
   Spin,
   Empty,
@@ -28,6 +27,7 @@ interface RoadmapModalProps {
   open: boolean;
   eventId: string;
   eventTitle: string;
+  eventCategory?: string;
   onCancel: () => void;
 }
 
@@ -46,13 +46,40 @@ const statuses = [
   { label: 'Concluído', value: 'COMPLETED', color: 'purple' }
 ];
 
-export function RoadmapModal({ open, eventId, eventTitle, onCancel }: RoadmapModalProps) {
+export function RoadmapModal({ open, eventId, eventTitle, eventCategory, onCancel }: RoadmapModalProps) {
   const [items, setItems] = useState<RoadmapItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState<RoadmapItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm();
+
+  const formatCurrencyInput = (value: string): string => {
+
+    const numbers = value.replace(/\D/g, '');
+    
+    if (!numbers) return '';
+    
+    const amount = Number(numbers) / 100;
+    
+    return amount.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  const parseCurrencyValue = (value: string): number => {
+    if (!value || value.trim() === '') return 0;
+    const parsed = value.replace(/\./g, '').replace(',', '.');
+    const num = parseFloat(parsed);
+    return isNaN(num) ? 0 : num;
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const formatted = formatCurrencyInput(inputValue);
+    form.setFieldsValue({ price: formatted });
+  };
 
 
   const loadRoadmapItems = React.useCallback(async () => {
@@ -78,16 +105,20 @@ export function RoadmapModal({ open, eventId, eventTitle, onCancel }: RoadmapMod
   const handleAdd = () => {
     setEditingItem(null);
     form.resetFields();
+    if (eventCategory) {
+      form.setFieldsValue({ category: eventCategory });
+    }
     setShowAddModal(true);
   };
 
   const handleEdit = (item: RoadmapItem) => {
     setEditingItem(item);
+    const priceValue = item.price ? parseFloat(item.price) : 0;
     form.setFieldsValue({
       category: item.category,
       title: item.title,
       description: item.description,
-      price: item.price ? parseFloat(item.price) : undefined,
+      price: priceValue > 0 ? formatCurrencyInput((priceValue * 100).toString()) : '',
       status: item.status
     });
     setShowAddModal(true);
@@ -97,9 +128,15 @@ export function RoadmapModal({ open, eventId, eventTitle, onCancel }: RoadmapMod
     try {
       setSubmitting(true);
 
+      const priceValue = values.price ? parseCurrencyValue(values.price) : 0;
+
       if (editingItem) {
         await roadmapService.updateRoadmap(editingItem.id, {
-          ...values,
+          category: values.category,
+          title: values.title,
+          description: values.description,
+          price: priceValue,
+          status: values.status
         });
         message.success('Item atualizado com sucesso!');
       } else {
@@ -108,7 +145,7 @@ export function RoadmapModal({ open, eventId, eventTitle, onCancel }: RoadmapMod
           category: values.category,
           title: values.title,
           description: values.description,
-          price: values.price || 0,
+          price: priceValue,
           status: values.status || 'PLANNING'
         });
         message.success('Item adicionado com sucesso!');
@@ -348,14 +385,10 @@ export function RoadmapModal({ open, eventId, eventTitle, onCancel }: RoadmapMod
                 label="Preço (R$)"
                 rules={[{ required: true, message: 'Digite o preço' }]}
               >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  min={0}
-                  step={0.01}
-                  precision={2}
-                  placeholder="0.00"
-                  formatter={value => `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-                  parser={value => value!.replace(/R\$\s?|(\.)/g, '')}
+                <Input
+                  placeholder="0,00"
+                  prefix="R$"
+                  onChange={handlePriceChange}
                 />
               </Form.Item>
             </Col>

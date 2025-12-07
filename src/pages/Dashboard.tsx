@@ -673,6 +673,7 @@ export function Dashboard() {
           open={showRoadmapModal}
           eventId={selectedEvent.id}
           eventTitle={selectedEvent.title}
+          eventCategory={selectedEvent.type}
           onCancel={() => {
             setShowRoadmapModal(false);
             setSelectedEvent(null);

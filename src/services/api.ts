@@ -27,9 +27,9 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   const token = getToken();
   
   // Preparar headers
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
   
   // Adicionar token no header Authorization se existir
@@ -61,6 +61,14 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
     }
     
     const data = await response.json();
+    
+    // Verificar se a resposta tem success: false mesmo com status HTTP ok
+    if (data.success === false && data.message) {
+      const error = new Error(data.message);
+      (error as any).status = response.status;
+      throw error;
+    }
+    
     return data;
   } catch (error) {
     console.error('API Request Error:', error);

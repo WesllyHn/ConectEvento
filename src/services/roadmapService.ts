@@ -19,6 +19,14 @@ export interface RoadmapResponse {
   data: RoadmapItem[] | RoadmapItem;
 }
 
+export interface UpdateRoadmapData {
+  category?: string;
+  title?: string;
+  description?: string;
+  price?: number;
+  status?: string;
+}
+
 export const roadmapService = {
   async getRoadmapByEventId(eventId: string): Promise<RoadmapItem[]> {
     const response = await apiRequest(`/roadmaps/eventId/${eventId}`) as RoadmapResponse;
@@ -35,7 +43,7 @@ export const roadmapService = {
     category: string;
     title: string;
     description: string;
-    price: string;
+    price: number;
     status: string;
   }): Promise<RoadmapItem> {
     const response = await apiRequest('/roadmaps/', {
@@ -45,7 +53,7 @@ export const roadmapService = {
     return response.data as RoadmapItem;
   },
 
-  async updateRoadmap(id: string, data: Partial<RoadmapItem>): Promise<RoadmapItem> {
+  async updateRoadmap(id: string, data: UpdateRoadmapData): Promise<RoadmapItem> {
     const response = await apiRequest(`/roadmaps/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
