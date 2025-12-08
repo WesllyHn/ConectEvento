@@ -5,6 +5,11 @@ import * as api from './api';
 
 vi.mock('./api');
 
+describe('uploadService', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   const mockUploadedImage: UploadedImage = {
     id: 'img-1',
     fileName: 'test-image.jpg',
