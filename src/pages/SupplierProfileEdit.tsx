@@ -196,8 +196,8 @@ export function SupplierProfileEdit() {
       return;
     }
 
-    if (portfolioImages.length >= 15) {
-      message.error('Máximo de 15 imagens no portfólio.');
+    if (portfolioImages.length >= 5) {
+      message.error('Máximo de 5 imagens no portfólio.');
       return;
     }
 
@@ -467,7 +467,7 @@ export function SupplierProfileEdit() {
               <button
                 type="button"
                 onClick={handleFileSelect}
-                disabled={uploadingImage || portfolioImages.length >= 15}
+                disabled={uploadingImage || portfolioImages.length >= 5}
                 className="flex items-center justify-center gap-2 px-4 py-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all w-full disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 <Upload className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
@@ -477,7 +477,7 @@ export function SupplierProfileEdit() {
               </button>
               <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                 <span>💡</span>
-                <span>Máximo de 15 imagens. Formatos aceitos: JPG, PNG (até 5MB cada)</span>
+                <span>Máximo de 5 imagens. Formatos aceitos: JPG, PNG (até 5MB cada)</span>
               </p>
             </div>
 

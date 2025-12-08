@@ -1,17 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { uploadService, UploadedImage } from './uploadService';
 import { API_BASE_URL } from './api';
+import * as api from './api';
 
-global.fetch = vi.fn();
-
-describe('uploadService', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+vi.mock('./api');
 
   const mockUploadedImage: UploadedImage = {
     id: 'img-1',
@@ -42,22 +34,14 @@ describe('uploadService', () => {
         return mockFileReader;
       });
 
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ data: mockUploadedImage }),
-      };
-
-      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+      vi.mocked(api.apiRequest).mockResolvedValue({ data: mockUploadedImage });
 
       const result = await uploadService.uploadImageBase64('supplier-1', mockFile);
 
-      expect(fetch).toHaveBeenCalledWith(
-        `${API_BASE_URL}/upload/supplier-1`,
+      expect(api.apiRequest).toHaveBeenCalledWith(
+        '/upload/supplier-1',
         expect.objectContaining({
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           body: expect.stringContaining('test-image.jpg'),
         })
       );
@@ -84,16 +68,11 @@ describe('uploadService', () => {
         return mockFileReader;
       });
 
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ data: mockUploadedImage }),
-      };
-
-      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+      vi.mocked(api.apiRequest).mockResolvedValue({ data: mockUploadedImage });
 
       await uploadService.uploadImageBase64('supplier-1', mockFile);
 
-      const callArgs = vi.mocked(fetch).mock.calls[0];
+      const callArgs = vi.mocked(api.apiRequest).mock.calls[0];
       const body = JSON.parse(callArgs[1]?.body as string);
 
       expect(body.data).not.toContain('data:');
@@ -120,17 +99,11 @@ describe('uploadService', () => {
         return mockFileReader;
       });
 
-      const mockResponse = {
-        ok: false,
-        status: 400,
-        text: vi.fn().mockResolvedValue('Bad Request'),
-      };
-
-      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+      vi.mocked(api.apiRequest).mockRejectedValue(new Error('Bad Request'));
 
       await expect(
         uploadService.uploadImageBase64('supplier-1', mockFile)
-      ).rejects.toThrow('Erro upload: 400 - Bad Request');
+      ).rejects.toThrow('Bad Request');
     });
 
     it('should handle FileReader errors', async () => {
@@ -176,16 +149,11 @@ describe('uploadService', () => {
         return mockFileReader;
       });
 
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ data: mockUploadedImage }),
-      };
-
-      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+      vi.mocked(api.apiRequest).mockResolvedValue({ data: mockUploadedImage });
 
       await uploadService.uploadImageBase64('supplier-1', mockFile);
 
-      const callArgs = vi.mocked(fetch).mock.calls[0];
+      const callArgs = vi.mocked(api.apiRequest).mock.calls[0];
       const body = JSON.parse(callArgs[1]?.body as string);
 
       expect(body).toEqual({
@@ -199,26 +167,16 @@ describe('uploadService', () => {
   describe('getSupplierImages', () => {
     it('should fetch supplier images successfully', async () => {
       const mockImages = [mockUploadedImage];
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ data: mockImages }),
-      };
-
-      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+      vi.mocked(api.apiRequest).mockResolvedValue({ data: mockImages });
 
       const result = await uploadService.getSupplierImages('supplier-1');
 
-      expect(fetch).toHaveBeenCalledWith(`${API_BASE_URL}/upload/supplier/supplier-1`);
+      expect(api.apiRequest).toHaveBeenCalledWith('/upload/supplier/supplier-1');
       expect(result).toEqual(mockImages);
     });
 
-    it('should handle fetch errors', async () => {
-      const mockResponse = {
-        ok: false,
-        status: 404,
-      };
-
-      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+    it('should handle API errors', async () => {
+      vi.mocked(api.apiRequest).mockRejectedValue(new Error('Erro ao buscar imagens'));
 
       await expect(
         uploadService.getSupplierImages('supplier-1')
@@ -226,12 +184,7 @@ describe('uploadService', () => {
     });
 
     it('should return empty array when no images exist', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ data: [] }),
-      };
-
-      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+      vi.mocked(api.apiRequest).mockResolvedValue({ data: [] });
 
       const result = await uploadService.getSupplierImages('supplier-1');
 
@@ -239,7 +192,7 @@ describe('uploadService', () => {
     });
 
     it('should handle network errors', async () => {
-      vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
+      vi.mocked(api.apiRequest).mockRejectedValue(new Error('Network error'));
 
       await expect(
         uploadService.getSupplierImages('supplier-1')
@@ -290,12 +243,7 @@ describe('uploadService', () => {
         return mockFileReader;
       });
 
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ data: mockUploadedImage }),
-      };
-
-      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+      vi.mocked(api.apiRequest).mockResolvedValue({ data: mockUploadedImage });
 
       await uploadService.uploadImageBase64('supplier-1', mockFile);
 
@@ -347,12 +295,7 @@ describe('uploadService', () => {
         return mockFileReader;
       });
 
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ data: mockUploadedImage }),
-      };
-
-      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+      vi.mocked(api.apiRequest).mockResolvedValue({ data: mockUploadedImage });
 
       const uploadResult = await uploadService.uploadImageBase64('supplier-1', mockFile);
 
@@ -390,14 +333,9 @@ describe('uploadService', () => {
           return mockFileReader;
         });
 
-        const mockResponse = {
-          ok: true,
-          json: vi.fn().mockResolvedValue({ 
-            data: { ...mockUploadedImage, fileName: fileType.name, mimeType: fileType.type } 
-          }),
-        };
-
-        vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+        vi.mocked(api.apiRequest).mockResolvedValue({ 
+          data: { ...mockUploadedImage, fileName: fileType.name, mimeType: fileType.type } 
+        });
 
         const result = await uploadService.uploadImageBase64('supplier-1', mockFile);
 

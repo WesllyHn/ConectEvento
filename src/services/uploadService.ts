@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './api';
+import { apiRequest, API_BASE_URL } from './api';
 
 export interface UploadedImage {
   id: string;
@@ -20,28 +20,17 @@ class UploadService {
       data: base64NoPrefix,
     };
 
-    const response = await fetch(`${API_BASE_URL}/upload/${supplierId}`, {
+    const response = await apiRequest(`/upload/${supplierId}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Erro upload: ${response.status} - ${text}`);
-    }
-
-    const json = await response.json();
-    return json.data;
+    return response.data;
   }
 
   async getSupplierImages(supplierId: string): Promise<UploadedImage[]> {
-    const response = await fetch(`${API_BASE_URL}/upload/supplier/${supplierId}`);
-    if (!response.ok) throw new Error('Erro ao buscar imagens');
-    const json = await response.json();
-    return json.data;
+    const response = await apiRequest(`/upload/supplier/${supplierId}`);
+    return response.data;
   }
 
   getImageUrl(imageId: string): string {
@@ -49,14 +38,9 @@ class UploadService {
   }
 
   async deleteImage(imageId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/upload/${imageId}`, {
+    await apiRequest(`/upload/${imageId}`, {
       method: 'DELETE',
     });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Erro ao deletar imagem: ${response.status} - ${text}`);
-    }
   }
 
   private fileToBase64(file: File): Promise<string> {
