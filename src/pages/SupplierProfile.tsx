@@ -61,6 +61,7 @@ export function SupplierProfile() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [existingQuotes, setExistingQuotes] = useState<any[]>([]);
   
   const loadSupplierData = useCallback(async () => {
     if (!id) return;
@@ -109,6 +110,20 @@ export function SupplierProfile() {
     }
   }, [user?.id]);
 
+  const loadExistingQuotes = useCallback(async () => {
+    if (!user?.id || !id) return;
+    try {
+      const quotes = await quoteService.getBudgetsByUserId(user.id);
+      // Filtrar apenas orçamentos para este fornecedor
+      const quotesForThisSupplier = quotes.filter(
+        (quote: any) => quote.supplierId === id || quote.supplier?.id === id
+      );
+      setExistingQuotes(quotesForThisSupplier);
+    } catch (error) {
+      console.error('Error loading existing quotes:', error);
+    }
+  }, [user?.id, id]);
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
@@ -125,8 +140,16 @@ export function SupplierProfile() {
   useEffect(() => {
     if (user?.id) {
       loadUserEvents();
+      loadExistingQuotes();
     }
-  }, [user?.id, loadUserEvents]);
+  }, [user?.id, loadUserEvents, loadExistingQuotes]);
+
+  // Carregar orçamentos existentes quando o modal abrir
+  useEffect(() => {
+    if (showQuoteModal && user?.id && id) {
+      loadExistingQuotes();
+    }
+  }, [showQuoteModal, user?.id, id, loadExistingQuotes]);
 
   if (loading) {
     return (
@@ -160,6 +183,16 @@ export function SupplierProfile() {
       return;
     }
 
+    // Verificar se já existe orçamento para este evento e fornecedor
+    const alreadyRequested = existingQuotes.some(
+      (quote: any) => quote.eventId === values.eventId || quote.event?.id === values.eventId
+    );
+
+    if (alreadyRequested) {
+      message.error('Você já solicitou um orçamento para este evento com este fornecedor');
+      return;
+    }
+
     try {
       setSubmitting(true);
       await quoteService.createBudget({
@@ -172,6 +205,8 @@ export function SupplierProfile() {
       message.success('Solicitação de orçamento enviada com sucesso!');
       setShowQuoteModal(false);
       form.resetFields();
+      // Recarregar orçamentos após criar um novo
+      await loadExistingQuotes();
     } catch (error) {
       console.error('Error creating quote:', error);
       message.error('Erro ao enviar solicitação de orçamento');
@@ -520,10 +555,17 @@ export function SupplierProfile() {
             <Select
               placeholder="Selecione o evento para solicitar orçamento"
               size="large"
-              options={events.map(event => ({
-                label: `${event.title} - ${new Date(event.date).toLocaleDateString('pt-BR')}`,
-                value: event.id
-              }))}
+              options={events.map(event => {
+                const alreadyRequested = existingQuotes.some(
+                  (quote: any) => quote.eventId === event.id || quote.event?.id === event.id
+                );
+                
+                return {
+                  label: `${event.title} - ${new Date(event.date).toLocaleDateString('pt-BR')}${alreadyRequested ? ' (Já solicitado)' : ''}`,
+                  value: event.id,
+                  disabled: alreadyRequested
+                };
+              })}
             />
           </Form.Item>
 
