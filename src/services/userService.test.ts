@@ -351,4 +351,153 @@ describe('userService', () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe('requestPasswordReset', () => {
+    it('should request password reset successfully', async () => {
+      const email = 'user@example.com';
+      const mockResponse = {
+        success: true,
+        message: 'Email de recuperação enviado com sucesso',
+        data: null,
+      };
+
+      vi.mocked(api.apiRequest).mockResolvedValue(mockResponse);
+
+      const result = await userService.requestPasswordReset(email);
+
+      expect(api.apiRequest).toHaveBeenCalledWith('/users/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('Email de recuperação enviado com sucesso');
+    });
+
+    it('should handle API error response', async () => {
+      const email = 'user@example.com';
+      const mockResponse = {
+        success: false,
+        message: 'Email não encontrado',
+        data: null,
+      };
+
+      vi.mocked(api.apiRequest).mockResolvedValue(mockResponse);
+
+      const result = await userService.requestPasswordReset(email);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Email não encontrado');
+    });
+
+    it('should handle API request failure', async () => {
+      const email = 'user@example.com';
+
+      vi.mocked(api.apiRequest).mockRejectedValue(new Error('Network error'));
+
+      const result = await userService.requestPasswordReset(email);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Network error');
+    });
+
+    it('should use default message when response has no message', async () => {
+      const email = 'user@example.com';
+      const mockResponse = {
+        success: true,
+        data: null,
+      };
+
+      vi.mocked(api.apiRequest).mockResolvedValue(mockResponse);
+
+      const result = await userService.requestPasswordReset(email);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('Email de recuperação enviado com sucesso');
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('should reset password successfully', async () => {
+      const token = 'valid-reset-token-123';
+      const newPassword = 'newSecurePassword123';
+      const mockResponse = {
+        success: true,
+        message: 'Senha redefinida com sucesso',
+        data: null,
+      };
+
+      vi.mocked(api.apiRequest).mockResolvedValue(mockResponse);
+
+      const result = await userService.resetPassword(token, newPassword);
+
+      expect(api.apiRequest).toHaveBeenCalledWith('/users/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, newPassword }),
+      });
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('Senha redefinida com sucesso');
+    });
+
+    it('should handle invalid token error', async () => {
+      const token = 'invalid-token';
+      const newPassword = 'newPassword123';
+      const mockResponse = {
+        success: false,
+        message: 'Token inválido ou expirado',
+        data: null,
+      };
+
+      vi.mocked(api.apiRequest).mockResolvedValue(mockResponse);
+
+      const result = await userService.resetPassword(token, newPassword);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Token inválido ou expirado');
+    });
+
+    it('should handle expired token error', async () => {
+      const token = 'expired-token';
+      const newPassword = 'newPassword123';
+      const mockResponse = {
+        success: false,
+        message: 'Este link de recuperação já foi utilizado',
+        data: null,
+      };
+
+      vi.mocked(api.apiRequest).mockResolvedValue(mockResponse);
+
+      const result = await userService.resetPassword(token, newPassword);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Este link de recuperação já foi utilizado');
+    });
+
+    it('should handle API request failure', async () => {
+      const token = 'some-token';
+      const newPassword = 'newPassword123';
+
+      vi.mocked(api.apiRequest).mockRejectedValue(new Error('Server error'));
+
+      const result = await userService.resetPassword(token, newPassword);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Server error');
+    });
+
+    it('should use default message when response has no message', async () => {
+      const token = 'valid-token';
+      const newPassword = 'newPassword123';
+      const mockResponse = {
+        success: true,
+        data: null,
+      };
+
+      vi.mocked(api.apiRequest).mockResolvedValue(mockResponse);
+
+      const result = await userService.resetPassword(token, newPassword);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('Senha redefinida com sucesso');
+    });
+  });
 });

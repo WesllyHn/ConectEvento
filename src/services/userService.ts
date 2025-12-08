@@ -105,6 +105,58 @@ class UserService {
     const users = await this.getAllUsers();
     return users.filter(user => user.type === 'organizer');
   }
+
+  async requestPasswordReset(email: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await apiRequest('/users/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      
+      if (response.success) {
+        return {
+          success: true,
+          message: response.message || 'Email de recuperação enviado com sucesso',
+        };
+      }
+      
+      return {
+        success: false,
+        message: response.message || 'Erro ao solicitar recuperação de senha',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Erro ao solicitar recuperação de senha',
+      };
+    }
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await apiRequest('/users/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, newPassword }),
+      });
+      
+      if (response.success) {
+        return {
+          success: true,
+          message: response.message || 'Senha redefinida com sucesso',
+        };
+      }
+      
+      return {
+        success: false,
+        message: response.message || 'Erro ao redefinir senha',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Erro ao redefinir senha',
+      };
+    }
+  }
 }
 
 export const userService = new UserService();

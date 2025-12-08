@@ -6,6 +6,8 @@ import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 import { Dashboard } from './pages/Dashboard';
 import { Suppliers } from './pages/Suppliers';
 import { SupplierProfile } from './pages/SupplierProfile';
@@ -41,6 +43,8 @@ function AppRoutes() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={isAuthenticated ? <Navigate to={user?.type === 'organizer' ? '/dashboard' : '/supplier-dashboard'} /> : <Login />} />
           <Route path="/register" element={isAuthenticated ? <Navigate to={user?.type === 'organizer' ? '/dashboard' : '/supplier-dashboard'} /> : <Register />} />
+          <Route path="/forgot-password" element={isAuthenticated ? <Navigate to={user?.type === 'organizer' ? '/dashboard' : '/supplier-dashboard'} /> : <ForgotPassword />} />
+          <Route path="/reset-password" element={isAuthenticated ? <Navigate to={user?.type === 'organizer' ? '/dashboard' : '/supplier-dashboard'} /> : <ResetPassword />} />
           <Route path="/suppliers" element={<Suppliers />} />
           <Route
             path="/dashboard"
